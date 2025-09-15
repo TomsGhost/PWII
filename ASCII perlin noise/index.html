@@ -85,6 +85,7 @@
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.font = `${cellH}px monospace`;
         ctx.textBaseline = "top";
+        ctx.filter = 'blur(2px)';
 
         const cols = Math.floor(canvas.width / cellW);
         const rows = Math.floor(canvas.height / cellH);
