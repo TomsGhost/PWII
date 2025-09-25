@@ -2,8 +2,8 @@
 import React from 'react';
 
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import LoginForm from './Frontend/Paginas/LoginForm';
-import RegisterForm from './Frontend/Paginas/RegisterForm';
+import LoginForm from './Paginas/LoginForm';
+import RegisterForm from './Paginas/RegisterForm';
 
 
 function App() {
