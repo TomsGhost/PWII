@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./styleLogin.css";
 import axios from "axios";
+import Swal from "sweetalert2";
 
 const LoginForm = () => {
   const navigate = useNavigate();
@@ -24,7 +25,12 @@ const LoginForm = () => {
       const mensaje = respuesta.data.msg[0][0].estado_sesion;
 
       if (mensaje === "LOGIN_EXITOSO") {
-        alert("Bienvenido!");
+        Swal.fire({
+          title: "¡Bienvenido!",
+          icon: "success",
+          timer: 1500,
+          showConfirmButton: false,
+        });
         const id = respuesta.data.msg[0][0].id;
         let datos;
 
@@ -39,7 +45,11 @@ const LoginForm = () => {
 
         } catch (error) {
           console.log(error);
-          alert("Error en la peticion");
+          Swal.fire({
+            title: "Error",
+            text: "Error en la petición",
+            icon: "error",
+          });
         }
 
         localStorage.setItem("id", id);
@@ -47,16 +57,26 @@ const LoginForm = () => {
             navigate("/Inicio", { state: { datos } });
         }
       } else if (mensaje) {
-        alert("No es posible iniciar sesión: " + mensaje);
+        Swal.fire({
+          title: "Error",
+          text: "No es posible iniciar sesión: " + mensaje,
+          icon: "error",
+        });
       } else {
-        alert(
-          "Error al inicar sesión: La respuesta del servidor no es válida."
-        );
+        Swal.fire({
+          title: "Error",
+          text: "Error al iniciar sesión: La respuesta del servidor no es válida.",
+          icon: "error",
+        });
       }
       console.log(respuesta.data);
     } catch (error) {
       console.log(error);
-      alert("Error en la peticion");
+      Swal.fire({
+        title: "Error",
+        text: "Error en la petición",
+        icon: "error",
+      });
     }
   };
 

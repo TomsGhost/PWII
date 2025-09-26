@@ -1,19 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import axios from 'axios';
-import "./styleLogin.css"; // Se mantienen los estilos para el fondo
+import "./styleLogin.css"; 
+import Swal from 'sweetalert2';
 
 const Inicio = () => {
-  const squares = [0, 1, 2, 3, 4]; // Se mantiene para el efecto de fondo
+  const squares = [0, 1, 2, 3, 4]; 
   const location = useLocation();
   
-  // Se inicializa el estado con los datos de la ubicación, si existen.
   const [datos, setDatos] = useState(location.state?.datos);
 
   useEffect(() => {
-    // Función asíncrona para buscar los datos del usuario.
     const fetchUserData = async () => {
-      // Si no hay datos y hay un ID en localStorage, busca los datos.
       const id = localStorage.getItem("id");
       if (!datos && id) {
         try {
@@ -22,21 +20,22 @@ const Inicio = () => {
             "http://localhost:3001/getUserData",
             userDataPayload
           );
-          
-          // Se actualiza el estado con los datos recibidos.
-          // Se asume que la respuesta tiene la estructura: { data: { msg: [[...]] } }
           if (response.data && response.data.msg && response.data.msg[0] && response.data.msg[0][0]) {
             setDatos(response.data.msg[0][0]);
           }
         } catch (error) {
           console.error("Error en la petición:", error);
-          alert("Error al buscar los datos del usuario.");
+          Swal.fire({
+            title: 'Error',
+            text: 'Error al buscar los datos del usuario.',
+            icon: 'error'
+          });
         }
       }
     };
 
     fetchUserData();
-  }, [datos]); // El efecto se ejecuta si 'datos' cambia, para evitar re-fetch innecesario.
+  }, [datos]);
 
   return (
     <section>
