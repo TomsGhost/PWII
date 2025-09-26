@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./styleRegister.css";
 import axios from "axios";
+import Swal from "sweetalert2";
 
 const RegisterForm = () => {
   const squares = [0, 1, 2, 3, 4];
@@ -109,17 +110,36 @@ const RegisterForm = () => {
       const mensaje = respuesta.data.msg[0][0].mensaje_estado;
 
       if (mensaje === "REGISTRO EXITOSO") {
-        alert("Usuario registrado");
-        navigate('/'); 
+        Swal.fire({
+          title: "¡Registro exitoso!",
+          text: "Usuario registrado correctamente.",
+          icon: "success",
+          timer: 1500,
+          showConfirmButton: false,
+        }).then(() => {
+          navigate('/');
+        });
       } else if (mensaje) {
-        alert("No es posible registrar al usuario: " + mensaje);
+        Swal.fire({
+          title: "Error",
+          text: "No es posible registrar al usuario: " + mensaje,
+          icon: "error",
+        });
       } else {
-        alert("Error al registrar usuario: La respuesta del servidor no es válida.");
+        Swal.fire({
+          title: "Error",
+          text: "Error al registrar usuario: La respuesta del servidor no es válida.",
+          icon: "error",
+        });
       }
       console.log(respuesta.data);
     } catch (error) {
       console.log(error);
-      alert("Error en la peticion");
+      Swal.fire({
+        title: "Error",
+        text: "Error en la petición.",
+        icon: "error",
+      });
     }
   };
 
