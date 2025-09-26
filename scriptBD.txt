@@ -1,0 +1,162 @@
+CREATE DATABASE PWII;
+USE PWII;
+
+CREATE TABLE Usuario (
+    id INT NOT NULL AUTO_INCREMENT,
+    nombre_completo VARCHAR(100) NOT NULL,
+    nombre_usuario VARCHAR(50) NOT NULL UNIQUE,
+    contrasena VARCHAR(255) NOT NULL,
+    correo VARCHAR(100) NOT NULL UNIQUE,
+    fotografia BLOB, 
+    baja BOOLEAN DEFAULT 0,
+    PRIMARY KEY (id)
+);
+
+CREATE TABLE Publicacion (
+    id INT NOT NULL AUTO_INCREMENT,
+    id_usuario INT NOT NULL,
+    titulo VARCHAR(150) NOT NULL,
+    descripcion VARCHAR(255),
+    texto TEXT NOT NULL,
+    baja BOOLEAN DEFAULT 0,
+    PRIMARY KEY (id),
+    FOREIGN KEY (id_usuario) REFERENCES Usuario(id)
+);
+
+CREATE TABLE Me_gusta (
+    id_usuario INT NOT NULL,
+    id_publicacion INT NOT NULL,
+    PRIMARY KEY (id_usuario, id_publicacion),
+    FOREIGN KEY (id_usuario) REFERENCES Usuario(id),
+    FOREIGN KEY (id_publicacion) REFERENCES Publicacion(id)
+);
+
+CREATE TABLE Comentario (
+    id INT NOT NULL AUTO_INCREMENT,
+    id_usuario INT NOT NULL,
+    id_publicacion INT NOT NULL,
+    comentario VARCHAR(500) NOT NULL,
+    PRIMARY KEY (id),
+    FOREIGN KEY (id_usuario) REFERENCES Usuario(id),
+    FOREIGN KEY (id_publicacion) REFERENCES Publicacion(id)
+);
+
+CREATE TABLE Favorito (
+    id INT NOT NULL AUTO_INCREMENT,
+    id_usuario INT NOT NULL,
+    id_publicacion INT NOT NULL,
+    descripcion VARCHAR(255),
+    PRIMARY KEY (id),
+    FOREIGN KEY (id_usuario) REFERENCES Usuario(id),
+    FOREIGN KEY (id_publicacion) REFERENCES Publicacion(id)
+);
+
+CREATE TABLE Seguir (
+    id_usuarioA INT NOT NULL, 
+    id_usuarioB INT NOT NULL, 
+    PRIMARY KEY (id_usuarioA, id_usuarioB),
+    FOREIGN KEY (id_usuarioA) REFERENCES Usuario(id),
+    FOREIGN KEY (id_usuarioB) REFERENCES Usuario(id)
+);
+
+
+-- DROP DATABASE IF EXISTS PWII;
+-- CREATE DATABASE PWII;
+-- USE PWII;
+
+USE PWII;
+
+
+DELIMITER //
+CREATE PROCEDURE SP_RegistrarUsuario (
+    IN p_nombre_completo VARCHAR(100),
+    IN p_nombre_usuario VARCHAR(50),
+    IN p_contrasena VARCHAR(255),
+    IN p_correo VARCHAR(100),
+    IN p_fotografia MEDIUMBLOB
+)
+BEGIN
+    DECLARE v_usuario_existente INT DEFAULT 0;
+    SELECT COUNT(id) INTO v_usuario_existente
+    FROM Usuario
+    WHERE nombre_usuario = p_nombre_usuario OR correo = p_correo;
+
+    IF v_usuario_existente = 0 THEN
+        INSERT INTO Usuario (
+            nombre_completo,
+            nombre_usuario,
+            contrasena,
+            correo,
+            fotografia
+        )
+        VALUES (
+            p_nombre_completo,
+            p_nombre_usuario,
+            p_contrasena,
+            p_correo,
+            p_fotografia
+        );
+
+        SELECT LAST_INSERT_ID() AS resultado_id;
+    ELSE
+        SELECT COUNT(id) INTO v_usuario_existente
+        FROM Usuario
+        WHERE nombre_usuario = p_nombre_usuario;
+        
+        IF v_usuario_existente > 0 THEN
+            SELECT -1 AS resultado_id; -- Ya existe el username
+        ELSE
+            SELECT -2 AS resultado_id; -- Ya existe el correo
+        END IF;
+    END IF;
+
+END //
+DELIMITER ;
+
+
+DELIMITER //
+CREATE PROCEDURE SP_IniciarSesion (
+    IN p_nombre_usuario VARCHAR(50),
+    IN p_contrasena VARCHAR(255)
+)
+BEGIN
+    SELECT
+        U.id,
+        CASE
+            WHEN U.contrasena = p_contrasena AND U.baja = 0 THEN 'LOGIN_EXITOSO'
+            WHEN U.contrasena = p_contrasena AND U.baja = 1 THEN 'DADO_BAJA'
+            WHEN U.contrasena != p_contrasena THEN 'CONTRASENA_INCORRECTA'
+            ELSE 'USUARIO_NO_ENCONTRADO'
+        END AS estado_sesion
+    FROM
+        Usuario U
+    WHERE
+        U.nombre_usuario = p_nombre_usuario;
+
+END //
+
+DELIMITER ;
+
+
+DELIMITER //
+CREATE PROCEDURE SP_ObtenerDatosDePerfil (
+    IN p_id INT
+)
+BEGIN
+    SELECT
+        U.nombre_completo,
+        U.nombre_usuario,
+        U.correo,
+        U.fotografia,
+        CASE 
+            WHEN U.baja = 0 THEN 'ACTIVO'
+            WHEN U.baja = 1 THEN 'DADO_BAJA'
+            ELSE 'NO_ENCONTRADO'
+        END AS estado_perfil
+    FROM
+        Usuario U
+    WHERE
+        U.id = p_id;
+
+END //
+DELIMITER ;
