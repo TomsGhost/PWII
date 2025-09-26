@@ -4,6 +4,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import LoginForm from './Paginas/LoginForm';
 import RegisterForm from './Paginas/RegisterForm';
+import Inicio from './Paginas/Inicio';
 
 
 function App() {
@@ -12,6 +13,7 @@ function App() {
       <Routes>
         <Route path="/" element={<LoginForm />} />
         <Route path="/register" element={<RegisterForm />} />
+        <Route path="/inicio" element={<Inicio />} />
       </Routes>
     </BrowserRouter>
   );

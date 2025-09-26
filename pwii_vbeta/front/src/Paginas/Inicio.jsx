@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, Navigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import "./styleLogin.css";
 import axios from "axios";
 
@@ -28,25 +28,6 @@ const LoginForm = () => {
 
       if (mensaje === "LOGIN_EXITOSO") {
         alert("Bienvenido!");
-        const id = respuesta.data.msg[0][0].id;
-
-        try {
-          const datosUsuario = await axios.post(
-            "http://localhost:3001/getUserData",
-            frmData,
-            { headers: { "Content-Type": "application/json" } }
-          );
-
-          const datos =datosUsuario.data.msg[0][0];
-
-        } catch (error) {
-          console.log(error);
-          alert("Error en la peticion");
-        }
-
-        localStorage.setItem("id", id);
-        //send datos to next page
-        Navigate("/Inicio");
       } else if (mensaje) {
         alert("No es posible iniciar sesión: " + mensaje);
       } else {

@@ -24,10 +24,6 @@ const RegisterForm = () => {
     frmData.append("file", archivo);
 
     //validaciones frontend
-    if (password !== confirmPassword) {
-      alert("Las contraseñas no coinciden");
-      return;
-    }
 
     try {
       const respuesta = await axios.post(
@@ -130,7 +126,7 @@ const RegisterForm = () => {
                 <input type="submit" value="Registrarse" />
               </div>
               <p className="forget">
-                Already have an account? <Link to="/"> Login</Link>
+                ¿Ya teiens una cuenta?<Link to="/"> Inicia sesión</Link>
               </p>
             </form>
           </div>
