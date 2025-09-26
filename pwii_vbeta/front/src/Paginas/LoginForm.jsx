@@ -1,9 +1,10 @@
 import React, { useState } from "react";
-import { Link, Navigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "./styleLogin.css";
 import axios from "axios";
 
 const LoginForm = () => {
+  const navigate = useNavigate();
   const squares = [0, 1, 2, 3, 4];
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -11,17 +12,13 @@ const LoginForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const frmData = new FormData();
-    frmData.append("username", username);
-    frmData.append("password", password);
-
     //validaciones frontend
 
     try {
+      const loginData = { username, password };
       const respuesta = await axios.post(
         "http://localhost:3001/login",
-        frmData,
-        { headers: { "Content-Type": "application/json" } }
+        loginData
       );
 
       const mensaje = respuesta.data.msg[0][0].estado_sesion;
@@ -29,15 +26,16 @@ const LoginForm = () => {
       if (mensaje === "LOGIN_EXITOSO") {
         alert("Bienvenido!");
         const id = respuesta.data.msg[0][0].id;
+        let datos;
 
         try {
+          const userDataPayload = { id };
           const datosUsuario = await axios.post(
             "http://localhost:3001/getUserData",
-            frmData,
-            { headers: { "Content-Type": "application/json" } }
+            userDataPayload
           );
 
-          const datos =datosUsuario.data.msg[0][0];
+          datos = datosUsuario.data.msg[0][0];
 
         } catch (error) {
           console.log(error);
@@ -45,8 +43,9 @@ const LoginForm = () => {
         }
 
         localStorage.setItem("id", id);
-        //send datos to next page
-        Navigate("/Inicio");
+        if (datos) {
+            navigate("/Inicio", { state: { datos } });
+        }
       } else if (mensaje) {
         alert("No es posible iniciar sesión: " + mensaje);
       } else {

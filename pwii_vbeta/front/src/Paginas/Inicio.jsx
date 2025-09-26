@@ -1,46 +1,42 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import "./styleLogin.css";
-import axios from "axios";
+import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
+import axios from 'axios';
+import "./styleLogin.css"; // Se mantienen los estilos para el fondo
 
-const LoginForm = () => {
-  const squares = [0, 1, 2, 3, 4];
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+const Inicio = () => {
+  const squares = [0, 1, 2, 3, 4]; // Se mantiene para el efecto de fondo
+  const location = useLocation();
+  
+  // Se inicializa el estado con los datos de la ubicación, si existen.
+  const [datos, setDatos] = useState(location.state?.datos);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    const frmData = new FormData();
-    frmData.append("username", username);
-    frmData.append("password", password);
-
-    //validaciones frontend
-
-    try {
-      const respuesta = await axios.post(
-        "http://localhost:3001/login",
-        frmData,
-        { headers: { "Content-Type": "application/json" } }
-      );
-
-      const mensaje = respuesta.data.msg[0][0].estado_sesion;
-
-      if (mensaje === "LOGIN_EXITOSO") {
-        alert("Bienvenido!");
-      } else if (mensaje) {
-        alert("No es posible iniciar sesión: " + mensaje);
-      } else {
-        alert(
-          "Error al inicar sesión: La respuesta del servidor no es válida."
-        );
+  useEffect(() => {
+    // Función asíncrona para buscar los datos del usuario.
+    const fetchUserData = async () => {
+      // Si no hay datos y hay un ID en localStorage, busca los datos.
+      const id = localStorage.getItem("id");
+      if (!datos && id) {
+        try {
+          const userDataPayload = { id };
+          const response = await axios.post(
+            "http://localhost:3001/getUserData",
+            userDataPayload
+          );
+          
+          // Se actualiza el estado con los datos recibidos.
+          // Se asume que la respuesta tiene la estructura: { data: { msg: [[...]] } }
+          if (response.data && response.data.msg && response.data.msg[0] && response.data.msg[0][0]) {
+            setDatos(response.data.msg[0][0]);
+          }
+        } catch (error) {
+          console.error("Error en la petición:", error);
+          alert("Error al buscar los datos del usuario.");
+        }
       }
-      console.log(respuesta.data);
-    } catch (error) {
-      console.log(error);
-      alert("Error en la peticion");
-    }
-  };
+    };
+
+    fetchUserData();
+  }, [datos]); // El efecto se ejecuta si 'datos' cambia, para evitar re-fetch innecesario.
 
   return (
     <section>
@@ -51,38 +47,31 @@ const LoginForm = () => {
         {squares.map((i) => (
           <div key={i} className="square" style={{ "--i": i }}></div>
         ))}
-
         <div className="container">
           <div className="form">
-            <h2>Inicio de sesión</h2>
-            <form onSubmit={handleSubmit}>
-              <div className="inputBox">
-                <input
-                  type="text"
-                  placeholder="Username"
-                  name="username"
-                  required
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                />
-              </div>
-              <div className="inputBox">
-                <input
-                  type="password"
-                  placeholder="Password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </div>
-              <div className="inputBox">
-                <input type="submit" value="Ingresar" />
-              </div>
-              <p className="forget">
-                ¿No tienes cuenta?
-                <Link to="/register"> Registrate</Link>
-              </p>
-            </form>
+            <h2>¡Bienvenid@!</h2>
+            <div>
+              <h1>Página de Inicio</h1>
+              {datos ? (
+                <div>
+                  <h3>Tus datos:</h3>
+                  <pre
+                    style={{
+                      textAlign: "left",
+                      color: "white",
+                      background: "rgba(0,0,0,0.2)",
+                      padding: "10px",
+                      borderRadius: "5px",
+                    }}
+                  >
+                    {JSON.stringify(datos, null, 2)}
+                  </pre>
+                </div>
+              ) : (
+                // Mensaje mientras se cargan los datos o si no se encuentran.
+                <p>Cargando datos o no se encontraron datos de usuario.</p>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -90,4 +79,4 @@ const LoginForm = () => {
   );
 };
 
-export default LoginForm;
+export default Inicio;
