@@ -99,7 +99,6 @@ const LoginForm = () => {
                   type="text"
                   placeholder="Username"
                   name="username"
-                  required
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                 />
@@ -108,7 +107,6 @@ const LoginForm = () => {
                 <input
                   type="password"
                   placeholder="Password"
-                  required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />

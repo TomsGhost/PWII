@@ -37,6 +37,9 @@ diferente para cada una.
 ***del pwii_vbeta\front\package-lock.json
 ***rmdir /s /q pwii_vbeta\front\node_modules
 ***cd pwii_vbeta\front && npm install
+***cd pwii_vbeta\front && npm install react-scripts@5.0.1
+***faltan más comandos
+
 
 
 ========================SOBRE LA PÁGINA===========================
