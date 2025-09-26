@@ -56,20 +56,23 @@ app.post(
         const imagen = req.file.buffer.toString("base64");
 
         db.query(
-            "INSERT INTO usuario(Nombre, Correo, Contra, Imagen) VALUES(?,?,?,?)", 
+            "CALL SP_RegistrarUsuario(?, ?, ?, ?, ?)", 
             [name, aka, mail, pass, imagen], 
             (err, result) => {
+                if (err) {
+                    console.error("Error en la consulta a la BD:", err);
+                    return resp.status(500).json({ msg: "Error interno del servidor al intentar registrar." });
+                }
                 resp.json({
                     msg: result
-                })
-                console.log(err);
+                });
             }
         )
 
     }
 )
 
-app.post("/login", (req, resp) => {
+app.get("/login", (req, resp) => {
     const { mail, pass } = req.body;
 
     db.query(

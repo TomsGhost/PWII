@@ -1,42 +1,80 @@
-import React from 'react';
-import { Link } from 'react-router-dom'; 
-import './styleLogin.css'; 
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import "./styleLogin.css";
+import axios from "axios";
+
 const LoginForm = () => {
-    const squares = [0, 1, 2, 3, 4];
+  const squares = [0, 1, 2, 3, 4];
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
 
-    return (
-        <section>
-            <div className="color"></div>
-            <div className="color"></div>
-            <div className="color"></div>
-            <div className="box">
-                {squares.map((i) => (
-                    <div key={i} className="square" style={{ '--i': i }}></div>
-                ))}
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-                <div className="container">
-                    <div className="form">
-                        <h2>Login Form</h2>
-                        <form>
-                            <div className="inputBox">
-                                <input type="text" placeholder="Username" />
-                            </div>
-                            <div className="inputBox">
-                                <input type="password" placeholder="Password" />
-                            </div>
-                            <div className="inputBox">
-                                <input type="submit" value="Login" />
-                            </div>
-                            <p className="forget">
-                                No tienes cuenta? 
-                                <Link to="/register"> Registrate</Link>
-                            </p>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </section>
-    );
+    const frmData = new FormData();
+    frmData.append("username", username);
+    frmData.append("password", password);
+
+    //validaciones frontend
+
+    try {
+      const respuesta = await axios.get(
+        "http://localhost:3001/login",
+        frmData,
+        { headers: { "Content-Type": "application/json" } }
+      );
+    }catch{
+
+    }
+
+  }
+
+  return (
+    <section>
+      <div className="color"></div>
+      <div className="color"></div>
+      <div className="color"></div>
+      <div className="box">
+        {squares.map((i) => (
+          <div key={i} className="square" style={{ "--i": i }}></div>
+        ))}
+
+        <div className="container">
+          <div className="form">
+            <h2>Inicio de sesión</h2>
+            <form>
+              <div className="inputBox">
+                <input
+                  type="text"
+                  placeholder="Username"
+                  name="username"
+                  required
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                />
+              </div>
+              <div className="inputBox">
+                <input
+                  type="password"
+                  placeholder="Password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </div>
+              <div className="inputBox">
+                <input type="submit" value="Ingresar" />
+              </div>
+              <p className="forget">
+                No tienes cuenta?
+                <Link to="/register"> Registrate</Link>
+              </p>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
 };
 
 export default LoginForm;

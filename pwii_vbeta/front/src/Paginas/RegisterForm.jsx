@@ -23,6 +23,12 @@ const RegisterForm = () => {
     frmData.append("pass", password);
     frmData.append("file", archivo);
 
+    //validaciones frontend
+    if (password !== confirmPassword) {
+      alert("Las contraseñas no coinciden");
+      return;
+    }
+
     try {
       const respuesta = await axios.post(
         "http://localhost:3001/register",
@@ -30,12 +36,15 @@ const RegisterForm = () => {
         { headers: { "Content-Type": "multipart/form-data" } }
       );
 
-      if (respuesta.data.msg === "REGISTRO EXITOSO") {
+      const mensaje = respuesta.data.msg[0][0].mensaje_estado;
+
+      if (mensaje === "REGISTRO EXITOSO") {
         alert("Usuario registrado");
-      } else if (respuesta.data.msg !== null) {
-        alert("No es posible registar al usuario: " + respuesta.data.msg);
+        navigate('/'); 
+      } else if (mensaje) {
+        alert("No es posible registrar al usuario: " + mensaje);
       } else {
-        alert("Error al registar usuario");
+        alert("Error al registrar usuario: La respuesta del servidor no es válida.");
       }
       console.log(respuesta.data);
     } catch (error) {
