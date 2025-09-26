@@ -1,9 +1,8 @@
 ===================INTEGRANTES=====================
---- Mayo
---- Adriana Mayela
---- Jordi Alexis Saldaña Ortíz
+1968956 --- Ingrid Vanessa Davila Moreno
+2128709 --- Ariadna Mayela Moreno Rodríguez
+2086278 --- Jordi Alexis Saldaña Ortíz
 2127289 --- María Mercedes Thomas Rivadulla
-
 
 
 
@@ -36,4 +35,13 @@ diferente para cada una.
 
 
 ========================SOBRE LA PÁGINA===========================
-(Lo que dice la FE)
+- pwii_vbeta/front: Contiene el código del frontend de la aplicación, desarrollado en React. 
+Aquí se encuentran los componentes y páginas que conforman la interfaz de usuario. Principalmente src.
+Dentro de src encontramos:
+    -/Componentes: los componentes que se utilizan para generar la interfaz de usuario.
+    -/Paginas: aquí están nuestras páginas en jsx.
+    -App.js: aquí ponemos las rutas de las páginas.
+
+- pwii_vbeta/server: Contiene el código del backend de la aplicación, desarrollado en Node.js con Express. 
+Gestiona la lógica de negocio, las rutas de la API y la conexión con la base de datos.
+    -index.js: aquí reside la información para la comunicación con la BD y los querys.
