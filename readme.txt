@@ -32,6 +32,11 @@ diferente para cada una.
 2. cd server
 3. node index.js
 
+***npm install
+***npm aud
+***del pwii_vbeta\front\package-lock.json
+***rmdir /s /q pwii_vbeta\front\node_modules
+***cd pwii_vbeta\front && npm install
 
 
 ========================SOBRE LA PÁGINA===========================
