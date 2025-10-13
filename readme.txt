@@ -38,9 +38,6 @@ diferente para cada una.
 ***rmdir /s /q pwii_vbeta\front\node_modules
 ***cd pwii_vbeta\front && npm install
 ***cd pwii_vbeta\front && npm install react-scripts@5.0.1
-***faltan más comandos
-
-
 
 ========================SOBRE LA PÁGINA===========================
 - pwii_vbeta/front: Contiene el código del frontend de la aplicación, desarrollado en React. 
