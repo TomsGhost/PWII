@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import axios from 'axios';
-import "./styleLogin.css"; 
+import "./styleInicio.css"; 
 import Swal from 'sweetalert2';
+import { Link } from 'react-router-dom';
+import Navbar from '../Componentes/Navbar';
+import astronautImg from '../assets/Astronaut.png';
 
 const Inicio = () => {
   const squares = [0, 1, 2, 3, 4]; 
@@ -39,10 +42,24 @@ const Inicio = () => {
 
   return (
     <section>
+     <div className="page-container landing-page">
       <div className="color"></div>
       <div className="color"></div>
       <div className="color"></div>
-      <div className="box">
+      <Navbar />
+      <main className="content-wrapper">
+        <div className="landing-container">
+          <div className="landing-content">
+            <h2>Embed</h2>
+            <p>
+              Tu música, tu voto, tu ranking. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+            </p>
+            <Link to="/home" className="landing-button">Rankear</Link>
+          </div>
+          <div className="landing-imgBx">
+            <img src={astronautImg} alt="Astronauta" />
+          </div>
+           <div className="box">
         {squares.map((i) => (
           <div key={i} className="square" style={{ "--i": i }}></div>
         ))}
@@ -74,8 +91,15 @@ const Inicio = () => {
           </div>
         </div>
       </div>
+        </div>
+      </main>
+    </div>
+     
     </section>
   );
 };
+
+
+
 
 export default Inicio;
