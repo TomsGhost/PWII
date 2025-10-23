@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import "./perfil.css";
+import star1 from '../assets/Star 1.png';
+import star2 from '../assets/Star 2(1).png';
 
 export default function Perfil() {
   // Embeds en estado para poder eliminar
@@ -26,12 +28,18 @@ export default function Perfil() {
 
   return (
     <section className="pf-section">
+
+       <div className="color"></div>
+      <div className="color"></div>
+      <div className="color"></div>
+
+
       {/* Topbar */}
       <header className="pf-topbar">
         <div className="pf-brand">Embed</div>
         <nav className="pf-nav">
           <Link className="pf-pill pf-active" to="/inicio">Inicio</Link>
-          <Link className="pf-pill" to="/inicio">Buscar</Link>
+          <Link className="pf-pill" to="/SearchPage">Buscar</Link>
           <Link className="pf-pill" to="/perfil">Perfil</Link>
           <Link className="pf-pill" to="/create-embed">Subir</Link>
         </nav>
@@ -77,14 +85,17 @@ export default function Perfil() {
           </div>
 
           <div className="pf-mini">
-            <div className="pf-mini-embed">
-              <div className="pf-mini-thumb" />
-              <div className="pf-mini-meta">
-                <div className="pf-mini-title">@prettynightmare</div>
-                <div className="pf-mini-sub">Me da sueño</div>
-              </div>
-              <div className="pf-mini-cta">▶</div>
-            </div>
+           <iframe
+                data-testid="embed-iframe"
+                style={{ borderRadius: '12px' }}
+                src="https://open.spotify.com/embed/track/341PThF0i9Aw4c0p2FZY2K?utm_source=generator"
+                width="100%"
+                height="200"
+                frameBorder="0"
+                allowFullScreen=""
+                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                loading="lazy">
+              </iframe>
           </div>
         </aside>
 
@@ -98,22 +109,10 @@ export default function Perfil() {
                 <header className="pf-card-title">{it.title}</header>
 
                 <div className="pf-metrics">
-                  <span>★ {it.likes}</span>
+                  <span><img src={star2} alt="Estrella vacía" />  {it.likes}</span>
                   <span>💬 {it.comments}</span>
                 </div>
 
-                <footer className="pf-actions">
-                  <Link to="/edit-embed" className="pf-act pf-edit" title="Editar embed">✏️</Link>
-                  <button
-                    type="button"
-                    className="pf-act pf-del"
-                    title="Eliminar embed"
-                    onClick={() => openDeleteModal(it.id)}
-                    aria-haspopup="dialog"
-                  >
-                    🗑️
-                  </button>
-                </footer>
               </article>
             ))}
           </div>

@@ -1,24 +1,28 @@
 @import url('https://fonts.googleapis.com/css2?family=Baumans&display=swap');
 
-*{ margin:0; padding:0; box-sizing:border-box; font-family:"Baumans", system-ui; }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Baumans", system-ui;
+}
+
 a{ text-decoration:none; }
 
 /* Fondo */
 .pf-section{
-  min-height:100vh;
-  display:flex; flex-direction:column; align-items:center;
-  padding-top:84px; position:relative; overflow:hidden;
-  background:
-    radial-gradient(1200px 500px at 50% 110%, rgba(0,0,0,.35), transparent 60%),
-    radial-gradient(900px 420px at 50% 80px, rgba(255,176,0,.12), transparent 65%),
-    linear-gradient(180deg, #2a223f 0%, #1b1632 45%, #0e0b1b 100%);
-  color:#fff;
+ display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: linear-gradient(to bottom, #1E1B3A, #000000);
+  position: relative;
+  overflow: hidden;
 }
 
 /* Topbar */
 .pf-topbar{
-  position:fixed; top:18px; left:50%; transform:translateX(-50%);
-  width:min(1100px, calc(100% - 40px)); height:56px;
+  position:fixed; top:0px; left:50%; transform:translateX(-50%);
+  width:min(12000px, calc(100% - 1px)); height:80px;
   display:flex; align-items:center; justify-content:space-between;
   background: rgba(255,255,255,.04);
   border:1px solid rgba(255,255,255,.16);
@@ -28,7 +32,7 @@ a{ text-decoration:none; }
   border-radius:14px; padding:0 18px; z-index:10;
   box-shadow: 0 4px 18px rgba(0,0,0,.18);
 }
-.pf-brand{ color:#FFB000; font-size:18px; letter-spacing:.5px; }
+.pf-brand{ color:#FFB000; font-size:36px; letter-spacing:.5px; }
 .pf-nav{ display:flex; gap:14px; }
 .pf-pill{
   color:#FFB000; padding:8px 14px; border-radius:999px;
@@ -201,3 +205,9 @@ a{ text-decoration:none; }
   background: rgba(255,255,255,.10);
 }
 .pf-btn-ghost:hover{ background: rgba(255,255,255,.16); }
+
+
+.color { position: absolute; filter: blur(150px); z-index: 1; }
+.color:nth-child(1) { top: -150px; left: 0; width: 600px; height: 600px; background: #E58D00; }
+.color:nth-child(2) { bottom: -150px; left: 100px; width: 500px; height: 500px; background: #2C264C; }
+.color:nth-child(3) { bottom: 50px; right: 100px; width: 400px; height: 400px; background: #00B0FF; }

@@ -44,7 +44,7 @@ const Inicio = () => {
               <p>
                 Tu música, tu voto, tu ranking. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
               </p>
-              <Link to="/home" className="landing-button">Rankear</Link>
+              <Link to="/HomePage" className="landing-button">Rankear</Link>
             </div>
 
             

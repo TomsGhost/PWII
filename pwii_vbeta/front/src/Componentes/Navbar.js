@@ -10,9 +10,8 @@ function Navbar() {
         {/* Usamos Link en lugar de <a> para no recargar la página */}
         <li><Link to="/HomePage">Inicio</Link></li>
         <li><Link to="/Searchpage">Buscar</Link></li>
-        <li><Link to="/lista">Lista</Link></li>
         <li><Link to="/perfil">Perfil</Link></li>
-        <li><Link to="/subir">Subir</Link></li>
+        <li><Link to="/create-embed">Subir</Link></li>
       </ul>
     </header>
   );

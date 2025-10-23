@@ -12,6 +12,10 @@ body {
   overflow: hidden;
 }
 
+.navbar-container {
+  position: relative;
+  z-index: 100;
+}
 
 .page-container {
   display: flex;
@@ -20,13 +24,14 @@ body {
   background: linear-gradient(to bottom, #1E1B3A, #000000);
   position: relative; 
   overflow: hidden; 
+  gap: 30px;
 }
 
 .content-wrapper {
   flex: 1;
   display: flex;
   gap: 30px;
-  padding: 2rem;
+  padding: 0 2rem 2rem 2rem;
   min-height: 0; 
 }
 
@@ -42,7 +47,10 @@ body {
   display: flex;
   flex-direction: column;
   gap: 30px;
-  min-height: 0; 
+  max-height: 75vh; 
+  padding-top: 10px;
+  overflow-y: auto;
+  padding-right: 15px;
 }
 
 .box, .box2, header {
@@ -64,6 +72,7 @@ header {
   justify-content: space-between;
   align-items: center;
   flex-shrink: 0; 
+  z-index: 11; /* <-- ¡AÑADE ESTA LÍNEA! */
 }
 
 header .logo {
@@ -107,6 +116,7 @@ header ul li a:hover, header ul li a.active {
   margin: 10px 0;
   cursor: pointer;
   transition: 0.5s;
+  z-index: 10;
 }
 
 .box .list:hover, .box2 .list:hover {

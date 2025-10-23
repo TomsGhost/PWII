@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import Navbar from '../Componentes/Navbar';
 import './styleSearch.css'; 
-
+import { Link } from 'react-router-dom';
+import star1 from '../assets/Star 1.png';
+import star2 from '../assets/Star 2(1).png';
 
 const SearchResultCard = ({ title, author }) => (
   <div className="search-card">
@@ -15,7 +17,7 @@ const SearchResultCard = ({ title, author }) => (
 );
 
 function SearchPage() {
-  const [searchTerm, setSearchTerm] = useState('Girls');
+  const [searchTerm, setSearchTerm] = useState('Pókemon');
   const [recentSearches] = useState([
     { id: 1, title: 'Girls like girls', author: 'Mercy' },
     { id: 2, title: 'Girls like girls', author: 'Mercy' },
@@ -26,6 +28,29 @@ function SearchPage() {
     { id: 7, title: 'Girls like girls', author: 'Mercy' },
     { id: 8, title: 'Girls like girls', author: 'Mercy' },
   ]);
+
+
+ const [embeds, setEmbeds] = useState(
+    Array.from({ length: 12 }).map((_, i) => ({
+      id: i + 1,
+      title: "Pokémon",
+      likes: 20,
+      comments: 20,
+    }))
+  );
+
+  // Modal de eliminación
+  const [toDeleteId, setToDeleteId] = useState(null);
+
+  const openDeleteModal = (id) => setToDeleteId(id);
+  const closeDeleteModal = () => setToDeleteId(null);
+  const confirmDelete = () => {
+    // TODO: aquí llamas a tu API (DELETE /embeds/:id)
+    setEmbeds((prev) => prev.filter((e) => e.id !== toDeleteId));
+    closeDeleteModal();
+  };
+
+
 
   return (
     <div className="page-container">
@@ -54,8 +79,21 @@ function SearchPage() {
             <h3>Recientes</h3>
             <div className="search-grid-wrapper">
                 <div className="search-grid">
-                    {recentSearches.map(item => (
-                        <SearchResultCard key={item.id} title={item.title} author={item.author} />
+                    {embeds.map((it) => (
+                     
+                      <Link 
+                          //key={it.id} 
+                          to={`/Ranking`}  //${it.id}
+                          className="pf-card-link"
+                        >
+                        <article className="pf-card"> 
+                          <header className="pf-card-title">{it.title}</header>
+                          <div className="pf-metrics">
+                            <span><img src={star2} alt="Estrella vacía" /> {it.likes}</span>
+                            <span>💬 {it.comments}</span>
+                          </div>
+                        </article>
+                      </Link>
                     ))}
                 </div>
             </div>

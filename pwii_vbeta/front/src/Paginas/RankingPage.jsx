@@ -4,6 +4,7 @@ import './styleRanking.css';
 import mercyImg from '../assets/Mercy2.png';
 import star1 from '../assets/Star 1.png';
 import star2 from '../assets/Star 2(1).png';
+import { Link } from 'react-router-dom';
 
 
 
@@ -42,7 +43,9 @@ function RankingPage() {
 
   return (
     <div className="page-container">
-      <Navbar />
+      <div className="navbar-container">
+        <Navbar />
+      </div>
       <main className="content-wrapper">
         <div className="color"></div>
         <div className="color"></div>
@@ -51,16 +54,19 @@ function RankingPage() {
         <div className="box column-left">
           <h3>Mas Populares</h3>
           {canciones.map((cancion) => (
-            <div className="list" key={cancion.rank}>
-              <div className="imgBx">
-                <img src={cancion.imagen} alt={`Portada de ${cancion.titulo}`} />
+            <Link to={`/Ranking`}>
+                <div className="list" key={cancion.rank}>
+                  <div className="imgBx">
+                  <img src={cancion.imagen} alt={`Portada de ${cancion.titulo}`} />
+                </div>
+                <div className="content">
+                  <h2 className="rank"><small>#</small>{cancion.rank}</h2>
+                  <h4>{cancion.titulo}</h4>
+                  <p>{cancion.artista}</p>
+                </div>
               </div>
-              <div className="content">
-                <h2 className="rank"><small>#</small>{cancion.rank}</h2>
-                <h4>{cancion.titulo}</h4>
-                <p>{cancion.artista}</p>
-              </div>
-            </div>
+            </Link>
+            
           ))}
         </div>
 
@@ -80,6 +86,7 @@ function RankingPage() {
                 loading="lazy">
               </iframe>
             </div>
+            <h3>Autor</h3>
             <h4>Lorem ipsum, dolor sit amet consectetur adipisicing elit.</h4>
             <div className="icons">
 
@@ -93,15 +100,18 @@ function RankingPage() {
             <h3>Comentarios</h3>
             <div className="comment-section">
               {comentarios.map((comentario) => (
-                <div className="list comment-item" key={comentario.id}>
-                  <div className="imgBx comment-img">
-                    <img src={comentario.profilePic} alt={`Foto de ${comentario.autor}`} />
+                <Link  to={`/perfil`}>
+                  <div className="list comment-item" key={comentario.id}>
+                    <div className="imgBx comment-img">
+                      <img src={comentario.profilePic} alt={`Foto de ${comentario.autor}`} />
+                    </div>
+                    <div className="content">
+                      <h4 className="comment-author">{comentario.autor}</h4>
+                      <p>{comentario.texto}</p>
+                    </div>
                   </div>
-                  <div className="content">
-                    <h4 className="comment-author">{comentario.autor}</h4>
-                    <p>{comentario.texto}</p>
-                  </div>
-                </div>
+                </Link>
+               
               ))}
             </div>
             <form onSubmit={handleCommentSubmit} className="comment-form">
