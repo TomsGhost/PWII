@@ -1,0 +1,92 @@
+@import url('https://fonts.googleapis.com/css2?family=Baumans&display=swap');
+
+*{ margin:0; padding:0; box-sizing:border-box; font-family:"Baumans", system-ui; }
+a{ text-decoration:none; }
+
+/* ===== Fondo (mismo look afinado) ===== */
+.ce-section{
+  min-height:100vh;
+  display:flex; flex-direction:column; align-items:center;
+  padding-top:84px; position:relative; overflow:hidden;
+  background:
+    radial-gradient(1200px 500px at 50% 110%, rgba(0,0,0,.35), transparent 60%),
+    radial-gradient(900px 420px at 50% 80px, rgba(255,176,0,.12), transparent 65%),
+    linear-gradient(180deg, #2a223f 0%, #1b1632 45%, #0e0b1b 100%);
+}
+
+/* ===== Topbar ===== */
+.ce-topbar{
+  position:fixed; top:18px; left:50%; transform:translateX(-50%);
+  width:min(1100px, calc(100% - 40px)); height:56px;
+  display:flex; align-items:center; justify-content:space-between;
+  background: rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.16);
+  border-right-color: rgba(255,255,255,.12);
+  border-bottom-color: rgba(255,255,255,.12);
+  backdrop-filter: blur(10px);
+  border-radius:14px; padding:0 18px; z-index:10;
+  box-shadow: 0 4px 18px rgba(0,0,0,.18);
+}
+.ce-brand{ color:#FFB000; font-size:18px; letter-spacing:.5px; }
+.ce-nav{ display:flex; gap:14px; }
+.ce-pill{
+  color:#FFB000; padding:8px 14px; border-radius:999px;
+  border:1px solid rgba(255,255,255,.14); background:transparent; transition:.2s;
+}
+.ce-pill:hover, .ce-active{ background: rgba(255,255,255,.08); }
+
+/* ===== Tarjeta ===== */
+.ce-container{ width:100%; display:flex; justify-content:center; padding:40px 16px 80px; }
+.ce-card{
+  width:min(640px, 94vw);
+  background: linear-gradient(180deg, rgba(20,16,30,.55), rgba(20,16,30,.42));
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius:18px;
+  color:#fff; text-align:center;
+  padding: 30px 26px 26px;
+  box-shadow: 0 18px 40px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.06);
+}
+.ce-title{
+  color:#FFB000; font-size: clamp(22px, 3vw, 28px); font-weight:700;
+  text-shadow: 0 1px 0 rgba(0,0,0,.35), 0 0 14px rgba(255,176,0,.18);
+  margin-bottom:14px;
+}
+
+/* ===== Inputs tipo pill ===== */
+.ce-inputBox{ width:100%; margin-bottom:12px; }
+.ce-inputBox input{
+  width:100%; color:#fff; background: rgba(255,255,255,.12);
+  border:1px solid rgba(255,255,255,.25);
+  border-right-color: rgba(255,255,255,.18);
+  border-bottom-color: rgba(255,255,255,.18);
+  border-radius:35px; outline:none;
+  padding:12px 18px; font-size:16px; letter-spacing:.3px;
+  box-shadow: 0 5px 15px rgba(0,0,0,.12);
+}
+.ce-inputBox input::placeholder{ color:#FFB000; opacity:.92; }
+.ce-inputBox input:focus{ box-shadow:0 0 0 3px rgba(255,184,0,.18); }
+
+/* ===== Botón ===== */
+.ce-actions{ margin-top:6px; }
+.ce-btn{
+  display:inline-flex; align-items:center; justify-content:center;
+  padding:10px 18px; border-radius:999px; cursor:pointer;
+  border:1px solid rgba(255,255,255,.18); transition:.2s;
+  min-width:140px; font-weight:600; color:#fff;
+}
+.ce-btn-primary{
+  background: linear-gradient(180deg, #ffa525, #ff8f09);
+  box-shadow: 0 12px 26px rgba(255,152,0,.35), 0 4px 0 rgba(0,0,0,.25),
+              inset 0 0 0 2px rgba(255,255,255,.15);
+}
+.ce-btn-primary:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 16px 34px rgba(255,152,0,.45), 0 4px 0 rgba(0,0,0,.25),
+              inset 0 0 0 2px rgba(255,255,255,.20);
+}
+
+/* ===== Responsive ===== */
+@media (max-width:560px){
+  .ce-topbar{ height:auto; padding:10px 12px; gap:10px; flex-wrap:wrap; }
+  .ce-nav{ width:100%; justify-content:center; flex-wrap:wrap; }
+}

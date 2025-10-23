@@ -1,0 +1,139 @@
+@import url('https://fonts.googleapis.com/css2?family=Baumans&display=swap');
+
+*{
+  margin:0; padding:0; box-sizing:border-box;
+  font-family:"Baumans", system-ui;
+}
+a{ text-decoration:none; }
+
+/* ===== Fondo general (sin recuadros animados) ===== */
+.dp-section{
+  min-height:100vh;
+  display:flex; flex-direction:column;
+  align-items:center;
+  padding-top:84px;
+  position:relative; overflow:hidden;
+
+
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.08) 0%, rgba(255,255,255,0) 45%),
+    radial-gradient(1400px 900px at 50% 120px,
+      rgba(255,176,0,.16) 0%,
+      rgba(255,176,0,.08) 35%,
+      rgba(58,39,65,0) 70%),
+    linear-gradient(to bottom,
+      #2f2550 0%,
+      #1a1632 55%,
+      #0c0a18 100%);
+}
+.dp-section{
+  background:
+    /* viñeta inferior muy suave */
+    radial-gradient(1200px 500px at 50% 110%, rgba(0,0,0,.35), transparent 60%),
+    /* resplandor cálido arriba (ligero) */
+    radial-gradient(900px 420px at 50% 80px, rgba(255,176,0,.12), transparent 65%),
+    /* gradiente base más profundo */
+    linear-gradient(180deg, #2a223f 0%, #1b1632 45%, #0e0b1b 100%) !important;
+}
+.dp-topbar{
+  background: rgba(255,255,255,.04) !important;
+  border: 1px solid rgba(255,255,255,.16) !important;
+  border-right-color: rgba(255,255,255,.12) !important;
+  border-bottom-color: rgba(255,255,255,.12) !important;
+  backdrop-filter: blur(10px) !important;
+  box-shadow: 0 4px 18px rgba(0,0,0,.18);
+}
+/* ===== Topbar ===== */
+.dp-topbar{
+  position:fixed; top:18px; left:50%; transform:translateX(-50%);
+  width:min(1100px, calc(100% - 40px));
+  height:56px;
+  display:flex; align-items:center; justify-content:space-between;
+  background: rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.35);
+  border-right:1px solid rgba(255,255,255,.2);
+  border-bottom:1px solid rgba(255,255,255,.2);
+  backdrop-filter: blur(8px);
+  border-radius:14px;
+  padding: 0 18px;
+  z-index:10;
+}
+.dp-brand{ color:#FFB000; font-size:18px; letter-spacing:.5px; }
+.dp-nav{ display:flex; gap:14px; }
+.dp-pill{
+  color:#FFB000; padding:8px 14px; border-radius:999px;
+  border:1px solid transparent; background:transparent;
+  transition:.2s;
+}
+.dp-pill:hover{ background: rgba(255,255,255,.08); border-color:rgba(255,255,255,.2); }
+.dp-active{ background: rgba(255,255,255,.08); border-color:rgba(255,255,255,.2); }
+
+/* ===== Tarjeta ===== */
+.dp-container{
+  width:100%;
+  display:flex; justify-content:center;
+  padding: 40px 16px 80px;
+}
+
+.dp-card{
+  width:min(560px, 92vw);
+  background: linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,.06));
+  border:1px solid rgba(255,255,255,.35);
+  border-right:1px solid rgba(255,255,255,.2);
+  border-bottom:1px solid rgba(255,255,255,.2);
+  backdrop-filter: blur(6px);
+  border-radius:18px;
+  padding: 34px 28px 26px;
+  text-align:center;
+  color:#fff;
+  box-shadow: 0 25px 45px rgba(0,0,0,.12);
+}
+
+.dp-title{
+  color:#FFB000;
+  font-size: clamp(22px, 3vw, 28px);
+  font-weight: 700;      /* se ve más grueso como en tu UI */
+  margin-bottom: 6px;
+}
+
+.dp-sub{
+  color: rgba(255,255,255,.85);
+  font-size: 14px;
+  margin-bottom: 18px;
+}
+
+.dp-actions{
+  display:flex; justify-content:center; gap:12px; flex-wrap:wrap;
+}
+
+.dp-btn{
+  display:inline-flex; align-items:center; justify-content:center;
+  padding:10px 18px;
+  border-radius:999px; border:1px solid rgba(255,255,255,.25);
+  user-select:none; cursor:pointer; transition:.2s ease;
+  min-width:140px; font-weight:600; color:#fff;
+}
+
+.dp-btn-primary{
+  background:#FF9800;
+  box-shadow: 0 10px 24px rgba(255,152,0,.35),
+              inset 0 0 0 2px rgba(255,255,255,.18);
+}
+.dp-btn-primary:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 14px 30px rgba(255,152,0,.45),
+              inset 0 0 0 2px rgba(255,255,255,.22);
+}
+
+.dp-btn-secondary{
+  background: rgba(255,255,255,.12);
+}
+.dp-btn-secondary:hover{
+  background: rgba(255,255,255,.18);
+}
+
+/* ===== Responsive ===== */
+@media (max-width:560px){
+  .dp-topbar{ height:auto; padding:10px 12px; gap:10px; flex-wrap:wrap; }
+  .dp-nav{ width:100%; justify-content:center; flex-wrap:wrap; }
+}
