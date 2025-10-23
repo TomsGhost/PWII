@@ -6,9 +6,11 @@ import LoginForm from './Paginas/LoginForm';
 import RegisterForm from './Paginas/RegisterForm';
 import Inicio from './Paginas/Inicio';
 import Perfil from './Paginas/Perfil';    
-
-
-
+import EditProfile from './Paginas/profileEdit';
+import DeleteProfile from "./Paginas/DeleteProfile";
+import EditEmbed from "./Paginas/EditEmbed";
+import CreateEmbed from './Paginas/CreateEmbed';
+import FavoriteEmbed from './Paginas/FavoriteEmbed';
 
 function App() {
   return (
@@ -18,6 +20,12 @@ function App() {
         <Route path="/register" element={<RegisterForm />} />
         <Route path="/inicio" element={<Inicio />} />
         <Route path="/perfil" element={<Perfil />} />  
+        <Route path="/profileEdit" element={<EditProfile />} />
+        <Route path="/deleteProfile" element={<DeleteProfile />} />
+        <Route path="/edit-embed" element={<EditEmbed />} />
+        <Route path="/create-embed" element={<CreateEmbed />} />
+        <Route path="/favorite-embed" element={<FavoriteEmbed />} />
+
       </Routes>
     </BrowserRouter>
   );

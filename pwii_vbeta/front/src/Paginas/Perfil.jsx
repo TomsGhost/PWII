@@ -1,165 +1,138 @@
-import React from "react";
-import { Link, useNavigate } from "react-router-dom";
-import "./stylePerfil.css";
-
-/* ====== Iconos SVG (sin librerías) ====== */
-const PencilIcon = (props) => (
-  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" {...props}>
-    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25Z" fill="currentColor"/>
-    <path d="M20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83Z" fill="currentColor"/>
-  </svg>
-);
-const TrashIcon = (props) => (
-  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" {...props}>
-    <path d="M6 7h12l-1 14H7L6 7Z" fill="currentColor"/>
-    <path d="M9 7V5h6v2M4 7h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-  </svg>
-);
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import "./perfil.css";
 
 export default function Perfil() {
-  const navigate = useNavigate();
-
-  /* === CONFIGURABLES (sin localStorage para avatar/nombre) === */
-  const username = "Jordi";
-  const avatar   = "https://img.jpeg";
-  const embedUrl =
-    localStorage.getItem("embedUrl") ||
-    "https://open.spotify.com/embed/track/1HNkqx9Ahdgi1Ixy2xkKkL?utm_source=generator";
-  const embedNote = localStorage.getItem("embedNote") || "Me da sueño";
-
-  /* === Datos mock (embeds) === */
-  const mockPosts = [
-    { id: 1, titulo: "Midnight Drive", artista: "Jordi Beats", genero: "Lo-fi",     likes: 28, comments: 12 },
-    { id: 2, titulo: "Crimson Lights", artista: "Mar & Co.",   genero: "Synthwave", likes: 42, comments: 7  },
-    { id: 3, titulo: "Reflejo",        artista: "Isay CG",     genero: "Indie",     likes: 13, comments: 3  },
-    { id: 4, titulo: "Bloom",          artista: "Neon Valley", genero: "Pop",       likes: 36, comments: 19 },
-    { id: 5, titulo: "Laguna",         artista: "Eira",        genero: "Lo-fi",     likes: 11, comments: 4  },
-    { id: 6, titulo: "Nova",           artista: "Nover",       genero: "Chillhop",  likes: 23, comments: 6  },
-    { id: 7, titulo: "Skylight",       artista: "Mar & Co.",   genero: "Synthwave", likes: 18, comments: 5  },
-    { id: 8, titulo: "Neon Run",       artista: "Jordi Beats", genero: "Electro",   likes: 20, comments: 8  },
-  ];
-  const mockLikes = [
-    { id: "L1", titulo: "Night Bloom", artista: "Eira",   likes: 9,  comments: 2  },
-    { id: "L2", titulo: "Vapor Waves", artista: "Nover",  likes: 29, comments: 11 },
-    { id: "L3", titulo: "Cielo Azul",  artista: "Isay CG",likes: 17, comments: 5  },
-  ];
-
-  /* === Acciones UI === */
-  const handleEditProfile = () => {
-    window.alert("Editar perfil (solo front por ahora)");
-  };
-  const handleDeleteAccount = () => {
-    if (!window.confirm("¿Eliminar tu cuenta? (solo borra datos locales)")) return;
-    localStorage.clear();
-    window.alert("Cuenta eliminada localmente.");
-    navigate("/register");
-  };
-
-  return (
-    <section className="perfil-wrap">
-      <div className="perfil-inner">
-
-        {/* ===== Panel redondo principal con título y menú ===== */}
-        <div className="panel">
-          <div className="panel-top">
-            <div className="panel-title">Embed</div>
-            <nav className="panel-menu">
-              <Link to="/inicio" className="pill active">Inicio</Link>
-              <Link to="/buscar" className="pill">Buscar</Link>
-              <Link to="/perfil" className="pill">Perfil</Link>
-              <Link to="/subir" className="pill accent">Subir</Link>
-            </nav>
-          </div>
-
-          {/* ===== Hero: 2 columnas */}
-          <div className="hero-row">
-
-            {/* Izquierda */}
-            <div className="hero-left">
-              {/* Embed más pequeño y sin scroll */}
-              <div className="perfil-embed compact">
-                <iframe
-                  title="embed"
-                  src={embedUrl}
-                  width="100%"
-                  height="64"
-                  frameBorder="0"
-                  scrolling="no"
-                  allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                  loading="lazy"
-                />
-                <p className="perfil-embed-caption">{embedNote}</p>
-              </div>
-
-              {/* Me gusta*/}
-              <section className="likes-box">
-                <h3 className="box-title">Me gusta</h3>
-                <div className="likes-list">
-                  {mockLikes.map(item => (
-                    <div key={item.id} className="like-row">
-                      <div className="like-info">
-                        <span className="like-title">{item.titulo}</span>
-                        <span className="like-artist">· {item.artista}</span>
-                      </div>
-                      <div className="like-stats">
-                        <span title="Likes">★ {item.likes}</span>
-                        <span title="Comentarios">💬 {item.comments}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            </div>
-
-            {/* Derecha*/}
-            <div className="hero-right">
-
-              <div className="name-with-avatar">
-                <h1 className="perfil-nombre">{username}</h1>
-                <div className="name-actions">
-                  <button type="button" className="icon-btn" onClick={handleEditProfile} aria-label="Editar perfil"><PencilIcon/></button>
-                  <button type="button" className="icon-btn danger" onClick={handleDeleteAccount} aria-label="Eliminar cuenta"><TrashIcon/></button>
-                </div>
-                <div className="perfil-avatar big">
-                  <img src={avatar} alt="avatar" />
-                </div>
-              </div>
-
-              <h3 className="perfil-title right">Recientes</h3>
-              <div className="cards-grid four-by-two">
-                {mockPosts.map((c) => (
-                  <SimpleCard key={c.id} data={c} />
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-        {/* ===== Fin panel ===== */}
-      </div>
-    </section>
+  // Embeds en estado para poder eliminar
+  const [embeds, setEmbeds] = useState(
+    Array.from({ length: 12 }).map((_, i) => ({
+      id: i + 1,
+      title: "Pokémon",
+      likes: 20,
+      comments: 20,
+    }))
   );
-}
 
-/* ------ Tarjeta ------ */
-function SimpleCard({ data }) {
+  // Modal de eliminación
+  const [toDeleteId, setToDeleteId] = useState(null);
+
+  const openDeleteModal = (id) => setToDeleteId(id);
+  const closeDeleteModal = () => setToDeleteId(null);
+  const confirmDelete = () => {
+    // TODO: aquí llamas a tu API (DELETE /embeds/:id)
+    setEmbeds((prev) => prev.filter((e) => e.id !== toDeleteId));
+    closeDeleteModal();
+  };
+
   return (
-    <article className="card simple-card">
-      <div>
-        <span className="card-tag">{data.genero}</span>
-        <p className="card-title">{data.titulo}</p>
-        <p className="card-artist">{data.artista}</p>
+    <section className="pf-section">
+      {/* Topbar */}
+      <header className="pf-topbar">
+        <div className="pf-brand">Embed</div>
+        <nav className="pf-nav">
+          <Link className="pf-pill pf-active" to="/inicio">Inicio</Link>
+          <Link className="pf-pill" to="/inicio">Buscar</Link>
+          <Link className="pf-pill" to="/perfil">Perfil</Link>
+          <Link className="pf-pill" to="/create-embed">Subir</Link>
+        </nav>
+      </header>
+
+      {/* Shell 2 columnas */}
+      <div className="pf-shell">
+        {/* Izquierda */}
+        <aside className="pf-left">
+          <div className="pf-avatar-wrap">
+            <img
+              className="pf-avatar"
+              src="https://dummyimage.com/200x200/222/ffffff.jpg&text=Avatar"
+              alt="Avatar de usuario"
+            />
+            <div className="pf-squares pf-squares-left">
+              <span className="pf-square" style={{ "--d": "0s" }} />
+              <span className="pf-square" style={{ "--d": "-1s" }} />
+              <span className="pf-square" style={{ "--d": "-2s" }} />
+            </div>
+            <div className="pf-squares pf-squares-right">
+              <span className="pf-square" style={{ "--d": "-.4s" }} />
+              <span className="pf-square" style={{ "--d": "-1.4s" }} />
+              <span className="pf-square" style={{ "--d": "-2.4s" }} />
+            </div>
+          </div>
+
+          <div className="pf-nameRow">
+            <h1 className="pf-username">Jordi</h1>
+            <div className="pf-profile-actions">
+              <Link to="/profileEdit" className="pf-icon-btn" title="Editar perfil">✏️</Link>
+              <Link to="/deleteProfile" className="pf-icon-btn pf-icon-danger" title="Eliminar perfil">🗑️</Link>
+            </div>
+          </div>
+
+          <div className="pf-likes">
+            <h3>Me gusta</h3>
+            <ul>
+              <li><Link to="#">Pokémon</Link></li>
+              <li><Link to="#">Pokémon</Link></li>
+              <li><Link to="#">Pokémon</Link></li>
+            </ul>
+          </div>
+
+          <div className="pf-mini">
+            <div className="pf-mini-embed">
+              <div className="pf-mini-thumb" />
+              <div className="pf-mini-meta">
+                <div className="pf-mini-title">@prettynightmare</div>
+                <div className="pf-mini-sub">Me da sueño</div>
+              </div>
+              <div className="pf-mini-cta">▶</div>
+            </div>
+          </div>
+        </aside>
+
+        {/* Derecha */}
+        <main className="pf-right">
+          <div className="pf-recent-title">Recientes</div>
+
+          <div className="pf-grid">
+            {embeds.map((it) => (
+              <article key={it.id} className="pf-card">
+                <header className="pf-card-title">{it.title}</header>
+
+                <div className="pf-metrics">
+                  <span>★ {it.likes}</span>
+                  <span>💬 {it.comments}</span>
+                </div>
+
+                <footer className="pf-actions">
+                  <Link to="/edit-embed" className="pf-act pf-edit" title="Editar embed">✏️</Link>
+                  <button
+                    type="button"
+                    className="pf-act pf-del"
+                    title="Eliminar embed"
+                    onClick={() => openDeleteModal(it.id)}
+                    aria-haspopup="dialog"
+                  >
+                    🗑️
+                  </button>
+                </footer>
+              </article>
+            ))}
+          </div>
+        </main>
       </div>
 
-      <div className="card-bottom">
-        <ul className="stats">
-          <li title="Likes">★ {data.likes}</li>
-          <li title="Comentarios">💬 {data.comments}</li>
-        </ul>
-        <div className="card-actions">
-          <button type="button" className="tiny-btn" aria-label="Editar"><PencilIcon/></button>
-          <button type="button" className="tiny-btn danger" aria-label="Eliminar"><TrashIcon/></button>
+      {/* MODAL: confirmar eliminación de embed */}
+      {toDeleteId !== null && (
+        <div className="pf-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="pf-modal-title">
+          <div className="pf-modal">
+            <h2 id="pf-modal-title">¿Seguro que deseas eliminar el embed?</h2>
+            <p className="pf-modal-sub">Esta acción no se puede deshacer.</p>
+            <div className="pf-modal-actions">
+              <button className="pf-btn pf-btn-danger" onClick={confirmDelete}>Sí, eliminar</button>
+              <button className="pf-btn pf-btn-ghost" onClick={closeDeleteModal}>Cancelar</button>
+            </div>
+          </div>
         </div>
-      </div>
-    </article>
+      )}
+    </section>
   );
 }
