@@ -17,6 +17,7 @@ import FavoriteEmbed from './Paginas/FavoriteEmbed';
 
 function App() {
   return (
+    
      <BrowserRouter>
       <Routes>
         <Route path="/" element={<LoginForm />} />
