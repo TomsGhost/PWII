@@ -9,6 +9,7 @@ import Perfil from './Paginas/Perfil';
 
 
 
+
 function App() {
   return (
      <BrowserRouter>
@@ -16,6 +17,7 @@ function App() {
         <Route path="/" element={<LoginForm />} />
         <Route path="/register" element={<RegisterForm />} />
         <Route path="/inicio" element={<Inicio />} />
+        <Route path="/perfil" element={<Perfil />} />  
       </Routes>
     </BrowserRouter>
   );
