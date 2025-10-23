@@ -5,6 +5,8 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import LoginForm from './Paginas/LoginForm';
 import RegisterForm from './Paginas/RegisterForm';
 import Inicio from './Paginas/Inicio';
+import Perfil from './Paginas/Perfil';    
+
 
 
 function App() {
