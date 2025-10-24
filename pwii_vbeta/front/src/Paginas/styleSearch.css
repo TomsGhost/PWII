@@ -113,6 +113,11 @@ header ul li a:hover, header ul li a.active { background: #2C264C; box-shadow: 0
     opacity: 1;
 }
 
+.button-fresh{
+    background: none; 
+    border: none;
+}
+
 .search-results-panel {
     width: 100%;
     flex-grow: 1;

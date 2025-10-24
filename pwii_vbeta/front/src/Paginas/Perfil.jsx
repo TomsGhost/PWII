@@ -70,7 +70,7 @@ export default function Perfil() {
           <div className="pf-likes">
             <h3>Me gusta</h3>
             <ul>
-              <li><Link to="#">Pokémon</Link></li>
+              <li><Link to="/ranking">Pokémon</Link></li>
               <li><Link to="#">Pokémon</Link></li>
               <li><Link to="#">Pokémon</Link></li>
             </ul>

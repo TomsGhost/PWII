@@ -1,11 +1,14 @@
 import React, { useRef, useState } from "react";
-import { Link } from "react-router-dom";
-import "./profileEdit.css"; 
+import { Link, useNavigate } from "react-router-dom";
+import "./profileEdit.css";
+import Swal from "sweetalert2";
 
 export default function EditProfile() {
-  const [username, setUsername] = useState("");
-  const [avatar,    setAvatar]    = useState(null);
+  const [username, setUsername] = useState("Jordi");
+  const [avatar, setAvatar] = useState(null);
   const fileInputRef = useRef(null);
+  const [errors, setErrors] = useState({});
+  const navigate = useNavigate();
 
   const handlePickFile = () => fileInputRef.current?.click();
 
@@ -18,8 +21,33 @@ export default function EditProfile() {
 
   const handleSave = (e) => {
     e.preventDefault();
- 
+    let newErrors = {};
+
+    const usernameRegex = /^[a-zA-Z0-9\p{P}\p{M}áéíóúÁÉÍÓÚñÑüÜ]+$/u;
+
+    if (!username.trim()) {
+      newErrors.username = "El nombre de usuario es obligatorio.";
+    } else if (username.length > 49) {
+      newErrors.username = "No debe superar los 49 caracteres.";
+    } else if (username.includes(" ")) {
+      newErrors.username =
+        "El nombre de usuario no puede contener espacios (máx. 1 palabra).";
+    } else if (!usernameRegex.test(username)) {
+        newErrors.username = "El nombre de usuario contiene caracteres no válidos.";
+    }
+
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) {
+      Swal.fire({
+        title: "Error",
+        text: "No es posible registrar los cambios, revise los datos",
+        icon: "error",
+      });
+      return;
+    }
+
     console.log("Guardar perfil:", { username });
+    navigate("/Perfil");
   };
 
   return (
@@ -40,10 +68,18 @@ export default function EditProfile() {
       <header className="pe-topbar">
         <div className="pe-brand">Embed</div>
         <nav className="pe-nav">
-          <Link className="pe-pill pe-active" to="#">Inicio</Link>
-          <Link className="pe-pill" to="#">Buscar</Link>
-          <Link className="pe-pill" to="#">Perfil</Link>
-          <Link className="pe-pill" to="#">Subir</Link>
+          <Link className="pe-pill pe-active" to="#">
+            Inicio
+          </Link>
+          <Link className="pe-pill" to="#">
+            Buscar
+          </Link>
+          <Link className="pe-pill" to="#">
+            Perfil
+          </Link>
+          <Link className="pe-pill" to="#">
+            Subir
+          </Link>
         </nav>
       </header>
 
@@ -59,7 +95,11 @@ export default function EditProfile() {
               }
               alt="Avatar de usuario"
             />
-            <button type="button" className="pe-btn pe-btn-secondary" onClick={handlePickFile}>
+            <button
+              type="button"
+              className="pe-btn pe-btn-secondary"
+              onClick={handlePickFile}
+            >
               Cambiar
             </button>
             <input
@@ -77,10 +117,15 @@ export default function EditProfile() {
             <input
               type="text"
               placeholder="Nombre de usuario"
+              name="username"
               value={username}
-              onChange={(e) => setUsername(e.target.value)}
               aria-label="Nombre de usuario"
+              onChange={(e) => {
+                setUsername(e.target.value);
+                if (errors.username) setErrors({ ...errors, username: null });
+              }}
             />
+            {errors.username && <p className="error-text">{errors.username}</p>}
           </div>
 
           <div className="pe-actions">

@@ -22,21 +22,22 @@ function App() {
       <Routes>
         <Route path="/" element={<LoginForm />} />
         <Route path="/register" element={<RegisterForm />} />
-        <Route path="/inicio" element={<Inicio />} />
-        <Route path="/HomePage" element={<HomePage />} />
-        <Route path="/SearchPage" element={<SearchPage />} />
-        <Route path="/ranking" element={<RankingPage />} />
+        <Route path="/inicio" element={<Inicio />} /> 
+        <Route path="/HomePage" element={<HomePage />} /> 
+        <Route path="/SearchPage" element={<SearchPage />} /> //ya está validado
+        <Route path="/ranking" element={<RankingPage />} /> 
         
         <Route path="/perfil" element={<Perfil />} />  
-        <Route path="/profileEdit" element={<EditProfile />} />
+        <Route path="/profileEdit" element={<EditProfile />} /> //ya está validado
         <Route path="/deleteProfile" element={<DeleteProfile />} />
-        <Route path="/edit-embed" element={<EditEmbed />} />
-        <Route path="/create-embed" element={<CreateEmbed />} />
+        <Route path="/edit-embed" element={<EditEmbed />} /> 
+        <Route path="/create-embed" element={<CreateEmbed />} /> 
         <Route path="/favorite-embed" element={<FavoriteEmbed />} />
 
       </Routes>
     </BrowserRouter>
   );
 }
+
 
 export default App;
