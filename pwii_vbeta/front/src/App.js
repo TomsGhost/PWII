@@ -28,7 +28,7 @@ function App() {
         <Route path="/ranking" element={<RankingPage />} />
         
         <Route path="/perfil" element={<Perfil />} />  
-        <Route path="/profileEdit" element={<EditProfile />} />
+        <Route path="/profileEdit" element={<EditProfile />} /> 
         <Route path="/deleteProfile" element={<DeleteProfile />} />
         <Route path="/edit-embed" element={<EditEmbed />} />
         <Route path="/create-embed" element={<CreateEmbed />} />

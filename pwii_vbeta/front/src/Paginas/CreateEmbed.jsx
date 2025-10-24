@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import Navbar from '../Componentes/Navbar';
 import "./createEmbed.css";
 
 export default function CreateEmbed() {
@@ -14,18 +15,13 @@ export default function CreateEmbed() {
   };
 
   return (
+    <div className="page-container">
+      <div className="color"></div>
+      <div className="color"></div>
+      <div className="color"></div>
+        <Navbar />
     <section className="ce-section">
-      {/* Topbar */}
-      <header className="ce-topbar">
-        <div className="ce-brand">Embed</div>
-        <nav className="ce-nav">
-          <Link className="ce-pill ce-active" to="#">Inicio</Link>
-          <Link className="ce-pill" to="#">Buscar</Link>
-          <Link className="ce-pill" to="#">Perfil</Link>
-          <Link className="ce-pill" to="#">Subir</Link>
-        </nav>
-      </header>
-
+     
       {/* Contenido */}
       <main className="ce-container">
         <form className="ce-card" onSubmit={onSubmit}>
@@ -72,6 +68,7 @@ export default function CreateEmbed() {
         </form>
       </main>
     </section>
+    </div>
   );
 }
 

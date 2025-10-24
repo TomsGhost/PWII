@@ -1,5 +1,6 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
+import Navbar from '../Componentes/Navbar';
 import "./deleteProfile.css";
 
 export default function DeleteProfile({ onConfirm, onCancel }) {
@@ -18,18 +19,12 @@ export default function DeleteProfile({ onConfirm, onCancel }) {
   };
 
   return (
-    <section className="dp-section">
-      {/* Topbar */}
-      <header className="dp-topbar">
-        <div className="dp-brand">Embed</div>
-        <nav className="dp-nav">
-          <Link className="dp-pill dp-active" to="#">Inicio</Link>
-          <Link className="dp-pill" to="#">Buscar</Link>
-          <Link className="dp-pill" to="#">Perfil</Link>
-          <Link className="dp-pill" to="#">Subir</Link>
-        </nav>
-      </header>
-
+    
+      <div className="page-container">
+      <div className="color"></div>
+      <div className="color"></div>
+      <div className="color"></div>
+        <Navbar />
       {/* Contenido central */}
       <main className="dp-container">
         <div className="dp-card">
@@ -46,6 +41,7 @@ export default function DeleteProfile({ onConfirm, onCancel }) {
           </div>
         </div>
       </main>
-    </section>
+      </div>
+  
   );
 }

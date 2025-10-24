@@ -90,3 +90,17 @@ a{ text-decoration:none; }
   .ce-topbar{ height:auto; padding:10px 12px; gap:10px; flex-wrap:wrap; }
   .ce-nav{ width:100%; justify-content:center; flex-wrap:wrap; }
 }
+.ce-card {
+  width: min(560px, 92vw);
+  background: linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,.06));
+  border: 1px solid rgba(255,255,255,.35);
+  border-right: 1px solid rgba(255,255,255,.2);
+  border-bottom: 1px solid rgba(255,255,255,.2);
+  backdrop-filter: blur(6px);
+  border-radius: 18px;
+  padding: 34px 28px 26px;
+  text-align: center;
+  color: #fff;
+  box-shadow: 0 25px 45px rgba(0,0,0,.12);
+  z-index: 1;  /* Asegura que quede al frente del fondo */
+}
