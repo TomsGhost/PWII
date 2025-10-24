@@ -28,10 +28,7 @@ export default function Perfil() {
   return (
     <section className="pf-section">
 
-      <div className="color"></div>
-      <div className="color"></div>
-      <div className="color"></div>
-
+      
 
       {/* Topbar */}
       <header className="pf-topbar">
