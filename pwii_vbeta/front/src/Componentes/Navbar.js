@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom'; 
-import '../Paginas/styleRanking.css';
+import '../Paginas/styleNavbar.css';
 
 function Navbar() {
   return (

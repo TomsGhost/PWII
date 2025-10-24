@@ -29,10 +29,7 @@ export default function Perfil() {
   return (
     <section className="pf-section">
 
-       <div className="color"></div>
-      <div className="color"></div>
-      <div className="color"></div>
-
+      
 
       {/* Topbar */}
       <header className="pf-topbar">
@@ -105,7 +102,9 @@ export default function Perfil() {
 
           <div className="pf-grid">
             {embeds.map((it) => (
-              <article key={it.id} className="pf-card">
+
+              <Link to={`/Ranking`}>
+                <article key={it.id} className="pf-card">
                 <header className="pf-card-title">{it.title}</header>
 
                 <div className="pf-metrics">
@@ -114,6 +113,8 @@ export default function Perfil() {
                 </div>
 
               </article>
+              </Link>
+            
             ))}
           </div>
         </main>
