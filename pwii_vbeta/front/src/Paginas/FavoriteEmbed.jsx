@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Navbar from '../Componentes/Navbar';
 import "./favoriteEmbed.css";
 import Swal from "sweetalert2";
@@ -7,6 +7,7 @@ import Swal from "sweetalert2";
 export default function FavoriteEmbed() {
   const [note, setNote] = useState("");
   const [errors, setErrors] = useState({});
+  const navigate = useNavigate();
 
   const onSubmit = (e) => {
     e.preventDefault();
@@ -29,6 +30,7 @@ export default function FavoriteEmbed() {
     }
     // TODO: Conecta a tu API para guardar el “favorito”
     console.log("Nuevo favorito:", { note });
+    navigate("/ranking");
   };
 
   return (

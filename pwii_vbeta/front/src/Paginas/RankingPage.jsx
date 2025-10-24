@@ -103,11 +103,11 @@ function RankingPage() {
                 loading="lazy">
               </iframe>
             </div>
-            <h3>Autor</h3>
+            <Link to={`/perfil` }><h3>Autor</h3></Link>
             <h4>Lorem ipsum, dolor sit amet consectetur adipisicing elit.</h4>
             <div className="icons">
 
-              <button class="like-btn"><i><img src={star2} alt="Estrella vacía" /></i> Favorite</button>
+              <Link to={`/favorite-embed`}><div class="like-btn"><i><img src={star2} alt="Estrella vacía" /></i> Favorite</div></Link>
               <button class="dislike-btn"><i><img src={star1} alt="Estrella llena" /></i> Like</button>
             
             </div>

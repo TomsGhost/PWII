@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import "./perfil.css";
 import star2 from '../assets/Star 2(1).png';
+import Navbar from '../Componentes/Navbar';
 
 export default function Perfil() {
   // Embeds en estado para poder eliminar
@@ -27,20 +28,7 @@ export default function Perfil() {
 
   return (
     <section className="pf-section">
-
-      
-
-      {/* Topbar */}
-      <header className="pf-topbar">
-        <div className="pf-brand">Embed</div>
-        <nav className="pf-nav">
-          <Link className="pf-pill pf-active" to="/inicio">Inicio</Link>
-          <Link className="pf-pill" to="/SearchPage">Buscar</Link>
-          <Link className="pf-pill" to="/perfil">Perfil</Link>
-          <Link className="pf-pill" to="/create-embed">Subir</Link>
-        </nav>
-      </header>
-
+<Navbar />
       {/* Shell 2 columnas */}
       <div className="pf-shell">
         {/* Izquierda */}

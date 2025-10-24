@@ -19,7 +19,7 @@ app.listen(3001, () => {
 const db = mysql2.createConnection({
   host: "localhost",
   user: "root",
-  password: "",
+  password: "$0lstici0XD",
   database: "PWII",
   port: 3306,
 });

@@ -53,7 +53,7 @@ export default function CreateEmbed() {
     }
 
     console.log("Crear embed:", { title, desc, url });
-    navigate("/HomePage");
+    navigate(-1);
   };
 
   return (

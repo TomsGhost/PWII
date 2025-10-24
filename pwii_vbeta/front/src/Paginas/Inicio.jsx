@@ -60,14 +60,7 @@ const Inicio = () => {
                 <div className="form-inicio">
                     <h2>¡Bienvenid@!</h2>
                     <h1>Página de Inicio</h1>
-                    {datos ? (
-                        <div>
-                            <h3>Tus datos:</h3>
-                            <pre>{JSON.stringify(datos, null, 2)}</pre>
-                        </div>
-                    ) : (
-                        <p>Cargando datos o no se encontraron datos de usuario.</p>
-                    )}
+                    
                 </div>
             </div>
 
@@ -75,5 +68,16 @@ const Inicio = () => {
     </div>
   );
 };
+/*
+                    {datos ? (
+                        <div>
+                            <h3>Tus datos:</h3>
+                            {datos.fotografia && <img src={`data:image/png;base64,${datos.fotografia}`} className="card-img-top" alt="Foto de perfil" style={{width: "100px", height: "100px", borderRadius: "50%"}}/>}
+                            <pre>{JSON.stringify(datos, null, 2)}</pre>
+                        </div>
+                    ) : (
+                        <p>Cargando datos o no se encontraron datos de usuario.</p>
+                    )}
+                    */
 
 export default Inicio;

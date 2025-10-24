@@ -5,9 +5,9 @@ import "./editEmbed.css";
 import Swal from "sweetalert2";
 
 export default function EditEmbed() {
-  const [title, setTitle] = useState("");
-  const [desc, setDesc] = useState("");
-  const [url, setUrl] = useState("");
+  const [title, setTitle] = useState("Girl in Red");
+  const [desc, setDesc] = useState("slay grrrrrrrrrl!!");
+  const [url, setUrl] = useState("https://open.spotify.com/embed/track/04OSnqlwlBJMvidYccraVz?utm_source=generator");
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
 
@@ -93,7 +93,7 @@ export default function EditEmbed() {
     }
 
     console.log("Crear embed:", { title, desc, url });
-    navigate("/ranking");
+    navigate(-1);
   };
 
   return (

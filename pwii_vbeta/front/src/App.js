@@ -19,13 +19,13 @@ function App() {
   return (
     
      <BrowserRouter>
-      <Routes>
+      <Routes>e
         <Route path="/" element={<LoginForm />} />
         <Route path="/register" element={<RegisterForm />} />
         <Route path="/inicio" element={<Inicio />} /> 
         <Route path="/HomePage" element={<HomePage />} /> 
         <Route path="/SearchPage" element={<SearchPage />} /> //ya está validado
-        <Route path="/ranking" element={<RankingPage />} /> 
+        <Route path="/ranking" element={<RankingPage />} /> //ya está validado
         
         <Route path="/perfil" element={<Perfil />} />  
         <Route path="/profileEdit" element={<EditProfile />} /> //ya está validado

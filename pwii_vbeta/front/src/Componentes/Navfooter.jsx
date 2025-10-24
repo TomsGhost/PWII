@@ -1,7 +1,7 @@
 
 function Nav(){
     return(
-        <header className="navbar navbar-expand-lg navbar-dark bg-dark px-4">
+      <header className="navbar navbar-expand-lg navbar-dark bg-dark px-4">
       <a className="navbar-brand fw-bold" href="/">
         MiApp
       </a>
@@ -29,7 +29,7 @@ function Footer(){
         <footer className="bg-dark text-white text-center py-3 mt-auto">
           <p>
             {" "}
-            Creado por <b>Profe Angeles</b>
+            Creado por <b></b>
           </p>
         </footer>
     );
