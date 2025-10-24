@@ -5,9 +5,7 @@ import mercyImg from '../assets/Mercy2.png';
 import star1 from '../assets/Star 1.png';
 import star2 from '../assets/Star 2(1).png';
 import { Link } from 'react-router-dom';
-
-
-
+import Swal from "sweetalert2";
 
 function RankingPage() {
 
@@ -27,10 +25,29 @@ function RankingPage() {
     { id: 2, autor: 'Alex', texto: 'Un clásico de Interpol.', profilePic: 'https://placehold.co/50x50/E58D00/1E1B3A?text=A' },
   ]);
   const [nuevoComentario, setNuevoComentario] = useState('');
+  const [errors, setErrors] = useState({});
 
   const handleCommentSubmit = (e) => {
     e.preventDefault();
-    if (nuevoComentario.trim() === '') return;
+    let newErrors = {};
+
+    if (!nuevoComentario.trim()) {
+      newErrors.comentario = "El comentario no puede estar vacío.";
+    } else if (nuevoComentario.length > 254) {
+      newErrors.comentario = "El comentario no debe superar los 254 caracteres.";
+    }
+
+    setErrors(newErrors);
+
+    if (Object.keys(newErrors).length > 0) {
+      Swal.fire({
+        title: "Error",
+        text: "No es posible publicar el comentario, revise los datos",
+        icon: "error",
+      });
+      return;
+    }
+    
     const newCommentObject = {
       id: Date.now(),
       autor: 'Usuario',
@@ -119,8 +136,12 @@ function RankingPage() {
               <textarea
                 placeholder="Escribe tu comentario aquí..."
                 value={nuevoComentario}
-                onChange={(e) => setNuevoComentario(e.target.value)}
+                onChange={(e) => {
+                  setNuevoComentario(e.target.value)
+                  if(errors.comentario) setErrors({...errors, comentario: null})
+                }}
               />
+              {errors.comentario && <p style={{ color: 'red' }}>{errors.comentario}</p>}
               <button type="submit">Publicar</button>
             </form>
           </div>

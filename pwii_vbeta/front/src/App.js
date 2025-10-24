@@ -30,9 +30,9 @@ function App() {
         <Route path="/perfil" element={<Perfil />} />  
         <Route path="/profileEdit" element={<EditProfile />} /> //ya está validado
         <Route path="/deleteProfile" element={<DeleteProfile />} />
-        <Route path="/edit-embed" element={<EditEmbed />} /> //
+        <Route path="/edit-embed" element={<EditEmbed />} /> //ya está validado
         <Route path="/create-embed" element={<CreateEmbed />} /> //ya está validado
-        <Route path="/favorite-embed" element={<FavoriteEmbed />} /> //
+        <Route path="/favorite-embed" element={<FavoriteEmbed />} /> //ya está validado
 
       </Routes>
     </BrowserRouter>
