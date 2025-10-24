@@ -6,7 +6,7 @@ import star2 from '../assets/Star 2(1).png';
 export default function Perfil() {
   // Embeds en estado para poder eliminar
   const [embeds, setEmbeds] = useState(
-    Array.from({ length: 12 }).map((_, i) => ({
+    Array.from({ length: 9 }).map((_, i) => ({
       id: i + 1,
       title: "Pokémon",
       likes: 20,
@@ -109,11 +109,24 @@ export default function Perfil() {
                   <span>💬 {it.comments}</span>
                 </div>
 
+                <footer className="pf-actions">
+                  <Link to="/edit-embed" className="pf-act pf-edit" title="Editar embed">✏️</Link>
+                  <button
+                    type="button"
+                    className="pf-act pf-del"
+                    title="Eliminar embed"
+                    onClick={() => openDeleteModal(it.id)}
+                    aria-haspopup="dialog"
+                  >
+                    🗑️
+                  </button>
+                </footer>
               </article>
             ))}
           </div>
         </main>
       </div>
+      
 
       {/* MODAL: confirmar eliminación de embed */}
       {toDeleteId !== null && (
