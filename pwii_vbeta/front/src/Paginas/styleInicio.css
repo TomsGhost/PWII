@@ -1,0 +1,137 @@
+@import url('https://fonts.googleapis.com/css2?family=Baumans&display=swap');
+
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Baumans", system-ui;
+}
+
+body {
+  overflow: hidden;
+}
+
+
+.page-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: linear-gradient(to bottom, #1E1B3A, #000000);
+  position: relative;
+  overflow: hidden;
+}
+
+.content-wrapper {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  min-height: 0;
+}
+
+
+header {
+  position: relative;
+  background: rgba(46, 9, 131, 0.2);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05);
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-top: 1px solid rgba(255, 255, 255, 0.5);
+  border-left: 1px solid rgba(255, 255, 255, 0.5);
+  z-index: 10;
+  padding: 20px 50px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+}
+header .logo { color: #E58D00; font-weight: 700; text-decoration: none; font-size: 2em; }
+header ul { display: flex; list-style: none; }
+header ul li a { text-decoration: none; color: #E58D00; padding: 8px 15px; border-radius: 25px; margin: 0 5px; }
+header ul li a:hover, header ul li a.active { background: #2C264C; box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1); }
+
+
+
+.combined-layout {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    width: 100%;
+    gap: 30px;
+}
+
+
+.landing-content {
+    flex: 1.5; 
+    max-width: 450px;
+    color: #fff;
+}
+.landing-content h2 { font-size: 4em; color: #E58D00; margin-bottom: 20px; }
+.landing-content p { font-size: 1.1em; line-height: 1.6; margin-bottom: 30px; }
+.landing-button { display: inline-block; background: #E58D00; color: #1E1B3A; padding: 12px 30px; border-radius: 50px; text-decoration: none; font-weight: bold; font-size: 1.1em; transition: transform 0.3s ease; }
+.landing-button:hover { transform: scale(1.05); }
+
+
+.landing-imgBx {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.landing-imgBx img { 
+    max-width: 100%; 
+    height: auto; 
+    max-height: 800px;
+    animation: animate 5s linear infinite; 
+}
+
+@keyframes animate
+{
+  0%,100%
+  {
+    transform: translateY(50px);
+  }
+  50%
+  {
+    transform: translateY(100px);
+  }
+}
+
+.box-inicio {
+  flex: 1; 
+  max-width: 400px;
+  min-height: 400px;
+  position: relative;
+  background: rgba(46, 9, 131, 0.2);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05);
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+  color: #fff;
+  z-index: 10;
+}
+
+.form-inicio h2 { font-size: 2em; color: #E58D00; margin-bottom: 20px; text-align: center; }
+.form-inicio p { margin-top: 20px; }
+.form-inicio pre { text-align: left; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 5px; white-space: pre-wrap; word-wrap: break-word; }
+
+.color { position: absolute; filter: blur(150px); z-index: 1; }
+.color:nth-child(1) { top: -150px; left: 0; width: 600px; height: 600px; background: #E58D00; }
+.color:nth-child(2) { bottom: -150px; left: 100px; width: 500px; height: 500px; background: #2C264C; }
+.color:nth-child(3) { bottom: 50px; right: 100px; width: 400px; height: 400px; background: #00B0FF; }
+
+.square { position: absolute; backdrop-filter: blur(5px); box-shadow: 0 25px 45px rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.5); background: rgba(255,255,255,0.1); border-radius: 10px; animation: animate 10s linear infinite; animation-delay: calc(-1s * var(--i)); }
+@keyframes animate { 0%, 100% { transform: translateY(-40px); } 50% { transform: translateY(40px); } }
+.square:nth-child(1) { top: -50px; right: -60px; width: 100px; height: 100px; }
+.square:nth-child(2) { top: 150px; left: -100px; width: 120px; height: 120px; z-index: 2; }
+.square:nth-child(3) { bottom: 50px; right: -60px; width: 80px; height: 80px; z-index: 2; }
+.square:nth-child(4) { bottom: -80px; left: 100px; width: 50px; height: 50px; }
+.square:nth-child(5) { top: -80px; left: 140px; width: 60px; height: 60px; }
+
