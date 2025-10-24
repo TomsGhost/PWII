@@ -11,6 +11,7 @@ a{ text-decoration:none; }
 
 /* Fondo */
 .pf-section{
+  z-index: -2;
  display: flex;
   flex-direction: column;
   height: 100vh;
@@ -112,7 +113,7 @@ a{ text-decoration:none; }
 .pf-likes a{ color:#FFB000; opacity:.95; }
 
 /* Mini-embed debajo de Me gusta */
-.pf-mini{ display:flex; }
+.pf-mini{ display:flex; z-index: 10;}
 .pf-mini-embed{
   display:flex; align-items:center; gap:10px;
   background: #2b2252; color:#fff;
@@ -207,7 +208,7 @@ a{ text-decoration:none; }
 .pf-btn-ghost:hover{ background: rgba(255,255,255,.16); }
 
 
-.color { position: absolute; filter: blur(150px); z-index: 1; }
+.color { position: absolute; filter: blur(150px); z-index: -1; }
 .color:nth-child(1) { top: -150px; left: 0; width: 600px; height: 600px; background: #E58D00; }
 .color:nth-child(2) { bottom: -150px; left: 100px; width: 500px; height: 500px; background: #2C264C; }
 .color:nth-child(3) { bottom: 50px; right: 100px; width: 400px; height: 400px; background: #00B0FF; }

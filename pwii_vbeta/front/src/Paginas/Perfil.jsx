@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import "./perfil.css";
-import star1 from '../assets/Star 1.png';
 import star2 from '../assets/Star 2(1).png';
 
 export default function Perfil() {
@@ -29,7 +28,7 @@ export default function Perfil() {
   return (
     <section className="pf-section">
 
-       <div className="color"></div>
+      <div className="color"></div>
       <div className="color"></div>
       <div className="color"></div>
 
