@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import Navbar from '../Componentes/Navbar';
 import "./editEmbed.css";
 import Swal from "sweetalert2";
 
@@ -10,11 +11,9 @@ export default function EditEmbed() {
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
 
-  // Normaliza a iframe según el proveedor (spotify/youtube/soundcloud)
   const iframeSrc = useMemo(() => {
     const u = url.trim();
 
-    // Spotify (acepta ya /embed/... o normaliza /track/ /album/ /playlist/)
     if (/spotify\.com/.test(u)) {
       if (/\/embed\//.test(u)) return u;
       // convierte /track/ID a /embed/track/ID
@@ -98,26 +97,13 @@ export default function EditEmbed() {
   };
 
   return (
+    <div className="page-container">
+      <div className="color"></div>
+      <div className="color"></div>
+      <div className="color"></div>
+        <Navbar />
     <section className="eb-section">
-      {/* Topbar */}
-      <header className="eb-topbar">
-        <div className="eb-brand">Embed</div>
-        <nav className="eb-nav">
-          <Link className="eb-pill eb-active" to="#">
-            Inicio
-          </Link>
-          <Link className="eb-pill" to="#">
-            Buscar
-          </Link>
-          <Link className="eb-pill" to="#">
-            Perfil
-          </Link>
-          <Link className="eb-pill" to="#">
-            Subir
-          </Link>
-        </nav>
-      </header>
-
+   
       {/* Contenido */}
       <main className="eb-container">
         <form className="eb-card" onSubmit={onSubmit}>
@@ -191,5 +177,6 @@ export default function EditEmbed() {
         </form>
       </main>
     </section>
+    </div>
   );
 }

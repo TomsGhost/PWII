@@ -1,6 +1,7 @@
 import React, { useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import "./profileEdit.css";
+import Navbar from '../Componentes/Navbar';
+import "./profileEdit.css"; 
 import Swal from "sweetalert2";
 
 export default function EditProfile() {
@@ -51,6 +52,14 @@ export default function EditProfile() {
   };
 
   return (
+           
+          <div className="page-container">
+      <div className="color"></div>
+      <div className="color"></div>
+      <div className="color"></div>
+        <Navbar />
+
+        
     <section className="pe-section">
       {/* blobs de color del fondo */}
       <div className="pe-color" />
@@ -63,25 +72,6 @@ export default function EditProfile() {
           <div key={i} className="pe-square" style={{ "--i": i }} />
         ))}
       </div>
-
-      {/* topbar */}
-      <header className="pe-topbar">
-        <div className="pe-brand">Embed</div>
-        <nav className="pe-nav">
-          <Link className="pe-pill pe-active" to="#">
-            Inicio
-          </Link>
-          <Link className="pe-pill" to="#">
-            Buscar
-          </Link>
-          <Link className="pe-pill" to="#">
-            Perfil
-          </Link>
-          <Link className="pe-pill" to="#">
-            Subir
-          </Link>
-        </nav>
-      </header>
 
       {/* tarjeta central */}
       <main className="pe-container">
@@ -136,5 +126,6 @@ export default function EditProfile() {
         </form>
       </main>
     </section>
+    </div>
   );
 }

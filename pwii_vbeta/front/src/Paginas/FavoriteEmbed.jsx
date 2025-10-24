@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import Navbar from '../Componentes/Navbar';
 import "./favoriteEmbed.css";
 
 export default function FavoriteEmbed() {
@@ -12,17 +13,12 @@ export default function FavoriteEmbed() {
   };
 
   return (
+       <div className="page-container">
+      <div className="color"></div>
+      <div className="color"></div>
+      <div className="color"></div>
+        <Navbar />
     <section className="fv-section">
-      {/* Topbar */}
-      <header className="fv-topbar">
-        <div className="fv-brand">Embed</div>
-        <nav className="fv-nav">
-          <Link className="fv-pill fv-active" to="#">Inicio</Link>
-          <Link className="fv-pill" to="#">Buscar</Link>
-          <Link className="fv-pill" to="#">Perfil</Link>
-          <Link className="fv-pill" to="#">Subir</Link>
-        </nav>
-      </header>
 
       {/* Contenido */}
       <main className="fv-container">
@@ -48,5 +44,6 @@ export default function FavoriteEmbed() {
         </form>
       </main>
     </section>
+    </div>
   );
 }
