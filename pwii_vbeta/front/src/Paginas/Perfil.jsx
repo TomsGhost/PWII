@@ -16,6 +16,7 @@ export default function Perfil() {
   );
 
   // Modal de eliminación
+  const [isFollowing, setIsFollowing] = useState(false);
   const [toDeleteId, setToDeleteId] = useState(null);
 
   const openDeleteModal = (id) => setToDeleteId(id);
@@ -56,6 +57,7 @@ export default function Perfil() {
             <div className="pf-profile-actions">
               <Link to="/profileEdit" className="pf-icon-btn" title="Editar perfil">✏️</Link>
               <Link to="/deleteProfile" className="pf-icon-btn pf-icon-danger" title="Eliminar perfil">🗑️</Link>
+              <div className="pf-icon-btn" title="Seguir usuario" onClick={() => setIsFollowing(!isFollowing)}>{isFollowing ? '✓' : '+'}</div>
             </div>
           </div>
 
@@ -90,7 +92,7 @@ export default function Perfil() {
           <div className="pf-grid">
             {embeds.map((it) => (
 
-              <Link to={`/Ranking`}>
+              <Link >
                 <article key={it.id} className="pf-card">
                 <header className="pf-card-title">{it.title}</header>
 
