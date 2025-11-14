@@ -7,7 +7,6 @@ function Navbar() {
         <header style={{width: '100vw'}}>
       <Link to="/ranking" className="logo">Embed</Link>
       <ul>
-        {/* Usamos Link en lugar de <a> para no recargar la página */}
         <li><Link to="/HomePage">Inicio</Link></li>
         <li><Link to="/Searchpage">Buscar</Link></li>
         <li><Link to="/perfil">Perfil</Link></li>
