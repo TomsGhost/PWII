@@ -72,7 +72,7 @@ const RegisterForm = () => {
     return Object.keys(newErrors).length === 0; 
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e) => { //validaciones frontend
     e.preventDefault();
 
     if (!validateForm()) {

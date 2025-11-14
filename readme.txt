@@ -103,3 +103,22 @@ Algunos comandos útiles para la gestión de dependencias:
   Contiene el código del backend, desarrollado en Node.js con Express.
   Gestiona la lógica de negocio, las rutas de la API y la conexión con la BD.
     -> index.js: Contiene la configuración de la base de datos y los endpoints de la API.
+
+
+
+╔════════════════════════════════════════════════════════════╗
+║                          PÁGINAS                           ║
+╚════════════════════════════════════════════════════════════╝
+/
+/register
+/inicio
+/HomePage
+/SearchPage
+/ranking
+        
+/perfil  
+/profileEdit
+/deleteProfile
+/edit-embed
+/create-embed
+/favorite-embed
