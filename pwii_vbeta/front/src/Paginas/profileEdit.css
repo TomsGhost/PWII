@@ -1,0 +1,170 @@
+/* Fuente y reset – igual que tu login */
+@import url('https://fonts.googleapis.com/css2?family=Baumans&display=swap');
+
+*{
+  margin:0; padding:0; box-sizing:border-box;
+  font-family:"Baumans", system-ui;
+  font-weight:400; font-style:normal;
+}
+a{ text-decoration:none; }
+
+/* ===== Fondo general con gradiente ===== */
+.pe-section{
+  min-height:100vh;
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
+  background: linear-gradient(to bottom, #1E1B3A, #000);
+  position:relative;
+  overflow:hidden;
+  padding-top:82px; /* deja espacio a la topbar */
+}
+
+/* blobs de color (mismos tonos) */
+.pe-color{ position:absolute; filter:blur(150px); }
+.pe-color:nth-child(1){ top:-350px; width:600px; height:600px; background:#E58D00; }
+.pe-color:nth-child(2){ bottom:-150px; left:100px; width:500px; height:500px; background:#2C264C; }
+.pe-color:nth-child(3){ bottom:50px; right:100px; width:300px; height:300px; background:#00B0FF; }
+
+/* cuadrados flotantes */
+.pe-box{ position:absolute; inset:0; pointer-events:none; }
+.pe-square{
+  position:absolute;
+  backdrop-filter: blur(5px);
+  box-shadow: 0 25px 45px rgba(0,0,0,.1);
+  border:1px solid rgba(255,255,255,.5);
+  border-right:1px solid rgba(255,255,255,.2);
+  border-bottom:1px solid rgba(255,255,255,.2);
+  background: rgba(255,255,255,.08);
+  border-radius:10px;
+  animation: pe-float 10s linear infinite;
+  animation-delay: calc(-1s * var(--i));
+}
+@keyframes pe-float{ 0%,100%{ transform:translateY(-40px);} 50%{ transform:translateY(40px);} }
+.pe-square:nth-child(1){ top:  40px; right:  60px; width:100px; height:100px; }
+.pe-square:nth-child(2){ top: 210px; left: -80px; width:120px; height:120px; z-index:2; }
+.pe-square:nth-child(3){ bottom: 60px; right: 60px; width:80px; height:80px; z-index:2; }
+.pe-square:nth-child(4){ bottom:-80px; left: 120px; width:50px; height:50px; }
+.pe-square:nth-child(5){ top: -80px; left: 140px; width:60px; height:60px; }
+
+/* ===== Topbar ===== */
+.pe-topbar{
+  position:fixed; top:18px; left:50%; transform:translateX(-50%);
+  width:min(1100px, calc(100% - 40px));
+  height:56px;
+  display:flex; align-items:center; justify-content:space-between;
+  background: rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.35);
+  border-right:1px solid rgba(255,255,255,.2);
+  border-bottom:1px solid rgba(255,255,255,.2);
+  backdrop-filter: blur(8px);
+  border-radius:14px;
+  padding: 0 18px;
+  z-index:10;
+}
+.pe-brand{ color:#FFB000; font-size:18px; letter-spacing:.5px; }
+.pe-nav{ display:flex; gap:14px; }
+.pe-pill{
+  color:#FFB000;
+  padding:8px 14px; border-radius:999px;
+  background: transparent;
+  border:1px solid transparent;
+  transition: .2s ease;
+}
+.pe-pill:hover{ background: rgba(255,255,255,.08); border-color:rgba(255,255,255,.2); }
+.pe-active{ background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.2); }
+
+/* ===== Tarjeta central ===== */
+.pe-container{
+  width:100%;
+  display:flex; justify-content:center;
+  padding: 40px 16px 80px;
+}
+
+.pe-card{
+  width:min(540px, 92vw);
+  background: rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.4);
+  border-right:1px solid rgba(255,255,255,.2);
+  border-bottom:1px solid rgba(255,255,255,.2);
+  box-shadow: 0 25px 45px rgba(0,0,0,.1);
+  border-radius:16px;
+  backdrop-filter: blur(6px);
+  padding: 40px 28px 32px;
+  text-align:center;
+  color:#fff;
+}
+
+.pe-avatar-wrap{ display:flex; flex-direction:column; gap:14px; align-items:center; }
+.pe-avatar{
+  width:180px; height:180px; border-radius:50%;
+  object-fit:cover; object-position:center;
+  box-shadow: 0 10px 25px rgba(0,0,0,.35);
+  border:2px solid rgba(255,255,255,.35);
+}
+
+/* Título – más grueso para que destaque el nombre/heading */
+.pe-title{
+  margin:18px 0 12px;
+  font-size:28px;
+  font-weight:700;       /* 👈 más gruesa */
+  color:#FFB000;
+}
+
+/* Input pill como en el login */
+.pe-inputBox{ width:100%; margin-top:8px; }
+.pe-inputBox input{
+  width:100%;
+  color:#fff;
+  background: rgba(255,255,255,.2);
+  border:1px solid rgba(255,255,255,.5);
+  border-right:1px solid rgba(255,255,255,.2);
+  border-bottom:1px solid rgba(255,255,255,.2);
+  border-radius:35px;
+  outline:none;
+  padding:12px 20px;
+  font-size:16px; letter-spacing:.5px;
+  box-shadow: 0 5px 15px rgba(0,0,0,.05);
+}
+.pe-inputBox input::placeholder{ color:#fff; opacity:.85; }
+.pe-inputBox input:focus{ box-shadow:0 0 0 3px rgba(255,184,0,.25); }
+
+/* Botones */
+.pe-actions{ margin-top:16px; }
+.pe-btn{
+  display:inline-flex; align-items:center; justify-content:center;
+  padding:10px 18px; border-radius:999px; cursor:pointer;
+  border:1px solid rgba(255,255,255,.25);
+  transition:.2s ease; user-select:none;
+}
+.pe-btn-primary{
+  background:#FF9800; color:#fff; min-width:120px; font-weight:600;
+  box-shadow: 0 10px 24px rgba(255,152,0,.35), inset 0 0 0 2px rgba(255,255,255,.18);
+}
+.pe-btn-primary:hover{ transform: translateY(-1px); box-shadow:0 14px 30px rgba(255,152,0,.45), inset 0 0 0 2px rgba(255,255,255,.22);}
+.pe-btn-secondary{
+  background: rgba(255,255,255,.12); color:#fff; font-weight:600;
+}
+.pe-btn-secondary:hover{ background: rgba(255,255,255,.18); }
+
+/* Responsive */
+@media (max-width: 560px){
+  .pe-topbar{ height:auto; padding:10px 12px; gap:10px; flex-wrap:wrap; }
+  .pe-nav{ width:100%; justify-content:center; flex-wrap:wrap; }
+  .pe-avatar{ width:150px; height:150px; }
+  .pe-title{ font-size:24px; }
+}
+.pe-card {
+  width: min(560px, 92vw);
+  background: linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,.06));
+  border: 1px solid rgba(255,255,255,.35);
+  border-right: 1px solid rgba(255,255,255,.2);
+  border-bottom: 1px solid rgba(255,255,255,.2);
+  backdrop-filter: blur(6px);
+  border-radius: 18px;
+  padding: 34px 28px 26px;
+  text-align: center;
+  color: #fff;
+  box-shadow: 0 25px 45px rgba(0,0,0,.12);
+  z-index: 1;  /* Asegura que quede al frente del fondo */
+}
