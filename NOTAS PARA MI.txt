@@ -1,0 +1,12 @@
+//contraseñas sin hash -> relamente no es necesario y no es una prioridad
+//reemplazar el boolean por un enum (activo, baja, suspendido) / *no es necesario*
+//No se si sea necesaria una tabla de notificaciones *No necesaria*
+
+
+agregar fechas de actualización/creación ->pendiente
+
+Stored Procedure -> pendientes/sugerencias
+editar perfil, crear publicación, obtener comentario ranking,
+obtener feed
+
+
