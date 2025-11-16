@@ -203,6 +203,12 @@ ADD fecha_actualizacion DATETIME ON UPDATE CURRENT_TIMESTAMP;
 ALTER TABLE Comentario
 ADD fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP;
 
+
+===opcional======================================
+FOREIGN KEY (id_usuario) REFERENCES Usuario(id) ON DELETE CASCADE
+
+
+
 -- =========================================
 -- Procedimientos adicionales (se puede unificar pero creo que lo complicaria)
 -- =========================================
