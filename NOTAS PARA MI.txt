@@ -9,3 +9,123 @@ editar perfil, crear publicación, obtener comentario ranking,
 obtener feed
 
 
+*ALTER TABLES*
+
+ALTER TABLE Usuario
+ADD fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP,
+ADD fecha_actualizacion DATETIME ON UPDATE CURRENT_TIMESTAMP;
+
+ALTER TABLE Publicacion
+ADD fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP,
+ADD fecha_actualizacion DATETIME ON UPDATE CURRENT_TIMESTAMP;
+
+ALTER TABLE Comentario
+ADD fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP;
+
+
+
+
+
+*Stored Procedures* POR SEPARADO
+
+-EDITAR PERFOL-
+DELIMITER //
+CREATE PROCEDURE SP_EditarPerfil (
+    IN p_id INT,
+    IN p_nombre_completo VARCHAR(100),
+    IN p_correo VARCHAR(100),
+    IN p_fotografia BLOB
+)
+BEGIN
+    UPDATE Usuario
+    SET nombre_completo = p_nombre_completo,
+        correo = p_correo,
+        fotografia = p_fotografia
+    WHERE id = p_id AND baja = 0;
+
+    SELECT 'PERFIL_ACTUALIZADO' AS estado_edicion;
+END //
+DELIMITER ;
+
+-CREAR PUBLICACION-
+DELIMITER //
+CREATE PROCEDURE SP_CrearPublicacion (
+    IN p_id_usuario INT,
+    IN p_titulo VARCHAR(150),
+    IN p_descripcion VARCHAR(255),
+    IN p_texto TEXT
+)
+BEGIN
+    INSERT INTO Publicacion (
+        id_usuario,
+        titulo,
+        descripcion,
+        texto
+    ) VALUES (
+        p_id_usuario,
+        p_titulo,
+        p_descripcion,
+        p_texto
+    );
+
+    SELECT LAST_INSERT_ID() AS id_publicacion, 'PUBLICACION_CREADA' AS estado;
+END //
+DELIMITER ;
+
+
+-COMENTARIOS POR PUBLICACION-
+DELIMITER //
+CREATE PROCEDURE SP_ObtenerComentariosPorPublicacion (
+    IN p_id_publicacion INT
+)
+BEGIN
+    SELECT
+        C.id,
+        C.comentario,
+        C.fecha_creacion,
+        U.nombre_usuario
+    FROM Comentario C
+    JOIN Usuario U ON C.id_usuario = U.id
+    WHERE C.id_publicacion = p_id_publicacion;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE SP_ObtenerRankingPublicaciones ()
+BEGIN
+    SELECT
+        P.id,
+        P.titulo,
+        P.descripcion,
+        COUNT(M.id_usuario) AS total_me_gusta
+    FROM Publicacion P
+    LEFT JOIN Me_gusta M ON P.id = M.id_publicacion
+    WHERE P.baja = 0
+    GROUP BY P.id
+    ORDER BY total_me_gusta DESC
+    LIMIT 10;
+END //
+DELIMITER ;
+
+
+-OBTENER FEED-
+DELIMITER //
+CREATE PROCEDURE SP_ObtenerFeed (
+    IN p_id_usuario INT
+)
+BEGIN
+    SELECT
+        P.id,
+        P.titulo,
+        P.descripcion,
+        P.fecha_creacion,
+        U.nombre_usuario
+    FROM Publicacion P
+    JOIN Usuario U ON P.id_usuario = U.id
+    WHERE P.id_usuario IN (
+        SELECT id_usuarioB FROM Seguir WHERE id_usuarioA = p_id_usuario
+    )
+    AND P.baja = 0
+    ORDER BY P.fecha_creacion DESC;
+END //
+DELIMITER ;
