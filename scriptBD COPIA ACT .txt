@@ -1,0 +1,188 @@
+CREATE DATABASE PWII;
+USE PWII;
+
+CREATE TABLE Usuario (
+    id INT NOT NULL AUTO_INCREMENT,
+    nombre_completo VARCHAR(100) NOT NULL,
+    nombre_usuario VARCHAR(50) NOT NULL UNIQUE,
+    contrasena VARCHAR(255) NOT NULL,
+    correo VARCHAR(100) NOT NULL UNIQUE,
+    fotografia BLOB, 
+    baja BOOLEAN DEFAULT 0,
+    PRIMARY KEY (id)
+);
+
+CREATE TABLE Publicacion (
+    id INT NOT NULL AUTO_INCREMENT,
+    id_usuario INT NOT NULL,
+    titulo VARCHAR(150) NOT NULL,
+    descripcion VARCHAR(255),
+    texto TEXT NOT NULL,
+    baja BOOLEAN DEFAULT 0,
+    PRIMARY KEY (id),
+    FOREIGN KEY (id_usuario) REFERENCES Usuario(id)
+);
+
+CREATE TABLE Me_gusta (
+    id_usuario INT NOT NULL,
+    id_publicacion INT NOT NULL,
+    PRIMARY KEY (id_usuario, id_publicacion),
+    FOREIGN KEY (id_usuario) REFERENCES Usuario(id),
+    FOREIGN KEY (id_publicacion) REFERENCES Publicacion(id)
+);
+
+CREATE TABLE Comentario (
+    id INT NOT NULL AUTO_INCREMENT,
+    id_usuario INT NOT NULL,
+    id_publicacion INT NOT NULL,
+    comentario VARCHAR(500) NOT NULL,
+    PRIMARY KEY (id),
+    FOREIGN KEY (id_usuario) REFERENCES Usuario(id),
+    FOREIGN KEY (id_publicacion) REFERENCES Publicacion(id)
+);
+
+CREATE TABLE Favorito (
+    id INT NOT NULL AUTO_INCREMENT,
+    id_usuario INT NOT NULL,
+    id_publicacion INT NOT NULL,
+    descripcion VARCHAR(255),
+    PRIMARY KEY (id),
+    FOREIGN KEY (id_usuario) REFERENCES Usuario(id),
+    FOREIGN KEY (id_publicacion) REFERENCES Publicacion(id)
+);
+
+CREATE TABLE Seguir (
+    id_usuarioA INT NOT NULL, 
+    id_usuarioB INT NOT NULL, 
+    PRIMARY KEY (id_usuarioA, id_usuarioB),
+    FOREIGN KEY (id_usuarioA) REFERENCES Usuario(id),
+    FOREIGN KEY (id_usuarioB) REFERENCES Usuario(id)
+);
+
+
+-- DROP DATABASE IF EXISTS PWII;
+-- CREATE DATABASE PWII;
+-- USE PWII;
+
+
+DELIMITER //
+CREATE PROCEDURE SP_RegistrarUsuario (
+    IN p_nombre_completo VARCHAR(100),
+    IN p_nombre_usuario VARCHAR(50),
+    IN p_contrasena VARCHAR(255),
+    IN p_correo VARCHAR(100),
+    IN p_fotografia MEDIUMBLOB
+)
+BEGIN
+    DECLARE v_usuario_existente_nombre INT DEFAULT 0;
+    DECLARE v_usuario_existente_correo INT DEFAULT 0;
+    
+    IF LENGTH(p_nombre_completo) > 99 THEN
+        SELECT NULL AS id_registro, 'ERROR: El nombre completo no debe superar los 99 caracteres.' AS mensaje_estado;
+    
+    ELSEIF LENGTH(p_correo) > 99 THEN
+        SELECT NULL AS id_registro, 'ERROR: El correo no debe superar los 99 caracteres.' AS mensaje_estado;
+        
+    ELSEIF LENGTH(p_nombre_usuario) > 49 OR p_nombre_usuario LIKE '% %' THEN
+        SELECT NULL AS id_registro, 'ERROR: El nombre de usuario no es válido (máx 49 chars y sin espacios).' AS mensaje_estado;
+        
+    ELSEIF LENGTH(p_contrasena) < 8 OR LENGTH(p_contrasena) > 16 OR p_contrasena LIKE '% %' THEN
+        SELECT NULL AS id_registro, 'ERROR: La contraseña debe tener entre 8 y 16 caracteres y no contener espacios.' AS mensaje_estado;
+
+    ELSE
+        SELECT COUNT(id) INTO v_usuario_existente_nombre
+        FROM Usuario
+        WHERE nombre_usuario = p_nombre_usuario;
+
+        SELECT COUNT(id) INTO v_usuario_existente_correo
+        FROM Usuario
+        WHERE correo = p_correo;
+
+        IF v_usuario_existente_nombre > 0 THEN
+            SELECT NULL AS id_registro, 'ERROR: Nombre de usuario ya registrado' AS mensaje_estado;
+
+        ELSEIF v_usuario_existente_correo > 0 THEN
+            SELECT NULL AS id_registro, 'ERROR: Correo ya registrado' AS mensaje_estado;
+
+        ELSE
+            INSERT INTO Usuario (
+                nombre_completo,
+                nombre_usuario,
+                contrasena,
+                correo,
+                fotografia
+            )
+            VALUES (
+                p_nombre_completo,
+                p_nombre_usuario,
+                p_contrasena,
+                p_correo,
+                p_fotografia
+            );
+
+            SELECT LAST_INSERT_ID() AS id_registro, 'REGISTRO EXITOSO' AS mensaje_estado;
+
+        END IF;
+
+    END IF;
+
+END //
+DELIMITER ;
+
+
+DELIMITER //
+CREATE PROCEDURE SP_IniciarSesion (
+    IN p_nombre_usuario VARCHAR(50),
+    IN p_contrasena VARCHAR(255)
+)
+BEGIN
+    DECLARE v_id INT;
+    DECLARE v_contrasena_db VARCHAR(255);
+    DECLARE v_baja_db BOOLEAN;
+
+    SELECT id, contrasena, baja
+    INTO v_id, v_contrasena_db, v_baja_db
+    FROM Usuario
+    WHERE nombre_usuario = p_nombre_usuario;
+
+    IF v_id IS NULL THEN
+        SELECT NULL AS id, 'USUARIO_NO_ENCONTRADO' AS estado_sesion;
+        
+    ELSEIF v_contrasena_db != p_contrasena THEN
+        SELECT NULL AS id, 'CONTRASENA_INCORRECTA' AS estado_sesion;
+        
+    ELSEIF v_baja_db = 1 THEN
+        SELECT NULL AS id, 'DADO_BAJA' AS estado_sesion;
+        
+    ELSE
+        SELECT v_id AS id, 'LOGIN_EXITOSO' AS estado_sesion;
+        
+    END IF;
+
+END //
+DELIMITER ;
+
+
+DELIMITER //
+CREATE PROCEDURE SP_ObtenerDatosDePerfil (
+    IN p_id INT
+)
+BEGIN
+    SELECT
+        U.nombre_completo,
+        U.nombre_usuario,
+        U.correo,
+        U.fotografia,
+        CASE 
+            WHEN U.baja = 0 THEN 'ACTIVO'
+            WHEN U.baja = 1 THEN 'DADO_BAJA'
+            ELSE 'NO_ENCONTRADO'
+        END AS estado_perfil
+    FROM
+        Usuario U
+    WHERE
+        U.id = p_id;
+
+END //
+DELIMITER ;
+
