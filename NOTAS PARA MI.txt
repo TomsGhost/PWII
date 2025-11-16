@@ -26,7 +26,7 @@ ADD fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP;
 
 
 
-*Stored Procedures* POR SEPARADO
+*Stored Procedures* POR SEPARADO (se puede hacer uno pero creo que se complicaria mas pipipi)
 
 -EDITAR PERFOL-
 DELIMITER //
