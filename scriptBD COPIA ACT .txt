@@ -209,8 +209,7 @@ FOREIGN KEY (id_usuario) REFERENCES Usuario(id) ON DELETE CASCADE
 
 
 -- =========================================
-VERSION VIEJA SIN ESPACIOS Y LONGITUDES
-*Stored Procedures* POR SEPARADO (se puede hacer uno pero creo que se complicaria mas pipipi)
+VERSION CORREGIDA CON VALIDACIONES
 -- =========================================
 
 --EDITAR PERFIL 
