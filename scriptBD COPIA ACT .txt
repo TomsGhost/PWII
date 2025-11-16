@@ -187,7 +187,7 @@ END //
 DELIMITER ;
 
 
-CAMBIOS AL SCRITP 
+----CAMBIOS AL SCRITP--------- 
 
 -- =========================================
 -- ALTER TABLE para fechas
@@ -208,11 +208,12 @@ ADD fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP;
 FOREIGN KEY (id_usuario) REFERENCES Usuario(id) ON DELETE CASCADE
 
 
-
 -- =========================================
--- Procedimientos adicionales (se puede unificar pero creo que lo complicaria)
+VERSION VIEJA SIN ESPACIOS Y LONGITUDES
+*Stored Procedures* POR SEPARADO (se puede hacer uno pero creo que se complicaria mas pipipi)
 -- =========================================
 
+--EDITAR PERFIL 
 DELIMITER //
 CREATE PROCEDURE SP_EditarPerfil (
     IN p_id INT,
@@ -221,16 +222,24 @@ CREATE PROCEDURE SP_EditarPerfil (
     IN p_fotografia BLOB
 )
 BEGIN
-    UPDATE Usuario
-    SET nombre_completo = p_nombre_completo,
-        correo = p_correo,
-        fotografia = p_fotografia
-    WHERE id = p_id AND baja = 0;
+    IF LENGTH(TRIM(p_nombre_completo)) = 0 OR LENGTH(p_nombre_completo) > 100 THEN
+        SELECT 'ERROR: Nombre inválido' AS estado_edicion;
+    ELSEIF LENGTH(TRIM(p_correo)) = 0 OR LENGTH(p_correo) > 100 THEN
+        SELECT 'ERROR: Correo inválido' AS estado_edicion;
+    ELSE
+        UPDATE Usuario
+        SET nombre_completo = p_nombre_completo,
+            correo = p_correo,
+            fotografia = p_fotografia
+        WHERE id = p_id AND baja = 0;
 
-    SELECT 'PERFIL_ACTUALIZADO' AS estado_edicion;
+        SELECT 'PERFIL_ACTUALIZADO' AS estado_edicion;
+    END IF;
 END //
 DELIMITER ;
 
+
+--CREAR PUBLICACION
 DELIMITER //
 CREATE PROCEDURE SP_CrearPublicacion (
     IN p_id_usuario INT,
@@ -239,22 +248,30 @@ CREATE PROCEDURE SP_CrearPublicacion (
     IN p_texto TEXT
 )
 BEGIN
-    INSERT INTO Publicacion (
-        id_usuario,
-        titulo,
-        descripcion,
-        texto
-    ) VALUES (
-        p_id_usuario,
-        p_titulo,
-        p_descripcion,
-        p_texto
-    );
+    IF LENGTH(TRIM(p_titulo)) = 0 OR LENGTH(p_titulo) > 150 THEN
+        SELECT 'ERROR: Título inválido' AS estado;
+    ELSEIF LENGTH(TRIM(p_texto)) = 0 THEN
+        SELECT 'ERROR: El texto no puede estar vacío' AS estado;
+    ELSE
+        INSERT INTO Publicacion (
+            id_usuario,
+            titulo,
+            descripcion,
+            texto
+        ) VALUES (
+            p_id_usuario,
+            p_titulo,
+            p_descripcion,
+            p_texto
+        );
 
-    SELECT LAST_INSERT_ID() AS id_publicacion, 'PUBLICACION_CREADA' AS estado;
+        SELECT LAST_INSERT_ID() AS id_publicacion, 'PUBLICACION_CREADA' AS estado;
+    END IF;
 END //
 DELIMITER ;
 
+
+--OBTENER COMENTARIOS
 DELIMITER //
 CREATE PROCEDURE SP_ObtenerComentariosPorPublicacion (
     IN p_id_publicacion INT
@@ -271,6 +288,8 @@ BEGIN
 END //
 DELIMITER ;
 
+
+--OBTENER RANKING
 DELIMITER //
 CREATE PROCEDURE SP_ObtenerRankingPublicaciones ()
 BEGIN
@@ -288,6 +307,8 @@ BEGIN
 END //
 DELIMITER ;
 
+
+--OBTENR FEED
 DELIMITER //
 CREATE PROCEDURE SP_ObtenerFeed (
     IN p_id_usuario INT
@@ -308,4 +329,6 @@ BEGIN
     ORDER BY P.fecha_creacion DESC;
 END //
 DELIMITER ;
+
+
 
