@@ -4,7 +4,6 @@
 
 
 agregar fechas de actualización/creación ->pendiente
-
 Stored Procedure -> pendientes/sugerencias
 editar perfil, crear publicación, obtener comentario ranking,
 obtener feed
