@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import "./perfil.css";
-import star2 from '../assets/Star 2(1).png';
+import ProfileEmbedCard from '../Componentes/ProfileEmbedCard';
+import SpotifyPlayer from '../Componentes/SpotifyPlayer';
 import Navbar from '../Componentes/Navbar';
 
 export default function Perfil() {
@@ -71,17 +72,7 @@ export default function Perfil() {
           </div>
 
           <div className="pf-mini">
-           <iframe
-                data-testid="embed-iframe"
-                style={{ borderRadius: '12px' }}
-                src="https://open.spotify.com/embed/track/341PThF0i9Aw4c0p2FZY2K?utm_source=generator"
-                width="100%"
-                height="200"
-                frameBorder="0"
-                allowFullScreen=""
-                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                loading="lazy">
-              </iframe>
+            <SpotifyPlayer />
           </div>
         </aside>
 
@@ -92,29 +83,15 @@ export default function Perfil() {
           <div className="pf-grid">
             {embeds.map((it) => (
 
-              <Link >
-                <article key={it.id} className="pf-card">
-                <header className="pf-card-title">{it.title}</header>
-
-                <div className="pf-metrics">
-                  <span><img src={star2} alt="Estrella vacía" />  {it.likes}</span>
-                  <span>💬 {it.comments}</span>
-                </div>
-
-                <footer className="pf-actions">
-                  <Link to="/edit-embed" className="pf-act pf-edit" title="Editar embed">✏️</Link>
-                  <button
-                    type="button"
-                    className="pf-act pf-del"
-                    title="Eliminar embed"
-                    onClick={() => openDeleteModal(it.id)}
-                    aria-haspopup="dialog"
-                  >
-                    🗑️
-                  </button>
-                </footer>
-              </article>
-              </Link>
+             <ProfileEmbedCard
+                key={it.id}
+                id={it.id}
+                title={it.title}
+                likes={it.likes}
+                comments={it.comments}
+                // Pasamos la función del componente padre al hijo
+                openDeleteModal={openDeleteModal}
+              />
             
             ))}
           </div>

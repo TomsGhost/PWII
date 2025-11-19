@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from '../Componentes/Navbar';
+import EmbedDetails from '../Componentes/EmbedDetails';
 import './styleRanking.css';
 import mercyImg from '../assets/Mercy2.png';
 import star1 from '../assets/Star 1.png';
@@ -26,6 +27,9 @@ function RankingPage() {
   ]);
   const [nuevoComentario, setNuevoComentario] = useState('');
   const [errors, setErrors] = useState({});
+
+  const [isFavorite, setIsFavorite] = useState(false); 
+  const [isLiked, setIsLiked] = useState(false);
 
   const handleCommentSubmit = (e) => {
     e.preventDefault();
@@ -88,30 +92,14 @@ function RankingPage() {
         </div>
 
         <div className="column-right">
-          <div className="box2">
-            <h3>Titulo de Canción</h3>
-            <div className="list">
-              <iframe
-                data-testid="embed-iframe"
-                style={{ borderRadius: '12px' }}
-                src="https://open.spotify.com/embed/track/341PThF0i9Aw4c0p2FZY2K?utm_source=generator"
-                width="100%"
-                height="200"
-                frameBorder="0"
-                allowFullScreen=""
-                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                loading="lazy">
-              </iframe>
-            </div>
-            <Link to={`/perfil` }><h3>Autor</h3></Link>
-            <h4>Lorem ipsum, dolor sit amet consectetur adipisicing elit.</h4>
-            <div className="icons">
-
-              <Link to={`/favorite-embed`}><div class="like-btn"><i><img src={star2} alt="Estrella vacía" /></i> Favorite</div></Link>
-              <button class="dislike-btn"><i><img src={star1} alt="Estrella llena" /></i> Like</button>
-            
-            </div>
-          </div>
+           <EmbedDetails 
+            songTitle="Pretty Nightmare" 
+            authorInfo="Lorem ipsum, dolor sit amet consectetur adipisicing elit." 
+            isFavorite={isFavorite}
+            onToggleFavorite={() => setIsFavorite(prev => !prev)}
+            isLiked={isLiked}
+            onToggleLike={() => setIsLiked(prev => !prev)}
+          />
 
           <div className="box2 box-comments">
             <h3>Comentarios</h3>
