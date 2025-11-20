@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useLocation, Link } from "react-router-dom";
+import { useLocation, Link, useNavigate } from "react-router-dom";
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import Navbar from '../Componentes/Navbar';
@@ -10,10 +10,12 @@ const Inicio = () => {
   const squares = [0, 1, 2, 3, 4]; 
   const location = useLocation();
   const [datos, setDatos] = useState(location.state?.datos);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUserData = async () => {
       const id = localStorage.getItem("id");
+      console.log(id);
       if (!datos && id) {
         try {
           const userDataPayload = { id };
@@ -25,6 +27,8 @@ const Inicio = () => {
           console.error("Error en la petición:", error);
           Swal.fire({ title: 'Error', text: 'Error al buscar los datos del usuario.', icon: 'error' });
         }
+      } else if(id===null) {
+        navigate(-1);
       }
     };
     fetchUserData();

@@ -19,7 +19,7 @@ app.listen(3001, () => {
 const db = mysql2.createConnection({
   host: "localhost",
   user: "root",
-  password: "mayo",
+  password: "$0lstici0XD",
   database: "PWII",
   port: 3306,
 });
@@ -103,5 +103,34 @@ app.post("/getUserData", (req, resp) => {
       msg: result,
     });
 
+  });
+});
+
+app.post("/createEmbed", (req, resp) =>{
+  const {id, title, desc, embed } = req.body;
+
+  db.query("CALL SP_CrearPublicacion(?, ?, ?, ?)", [id, title, desc, embed], (err, result) =>{
+    if(err){
+      console.error("Error en la consulta a la BD:", err);
+      return resp
+        .status(500)
+        .json({msg: "Error interno al intentar crear la publicacion."});
+    }
+    resp.json({
+      msg: result,
+    });
+  });
+
+});
+
+app.get("/getPosts", (req, resp) => {
+  db.query("CALL V_ObtenerPublicaciones()", (err, result) => {
+    if (err) {
+      console.error("Error en la consulta a la BD:", err);
+      return resp
+        .status(500)
+        .json({ msg: "Error interno del servidor al obtener las publicaciones." });
+    }
+    resp.json(result);
   });
 });

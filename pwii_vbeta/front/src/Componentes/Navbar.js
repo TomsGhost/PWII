@@ -3,6 +3,10 @@ import { Link } from 'react-router-dom';
 import '../Paginas/styleNavbar.css';
 
 function Navbar() {
+  const handleLogout = () => {
+    localStorage.removeItem("id");
+  };
+
   return (
         <header style={{width: '100vw'}}>
       <Link to="/ranking" className="logo">Embed</Link>
@@ -11,7 +15,7 @@ function Navbar() {
         <li><Link to="/Searchpage">Buscar</Link></li>
         <li><Link to="/perfil">Perfil</Link></li>
         <li><Link to="/create-embed">Subir</Link></li>
-        <li><Link to="/">Cerrar sesión</Link></li>
+        <li><Link to="/" onClick={handleLogout}>Cerrar sesión</Link></li>
       </ul>
     </header>
   );

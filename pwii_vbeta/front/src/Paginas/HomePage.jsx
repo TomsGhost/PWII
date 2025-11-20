@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import Navbar from '../Componentes/Navbar';
-import './styleHome.css';
-import star1 from '../assets/Star 1.png';
-import star2 from '../assets/Star 2(1).png';
-
+import React, { useState, useEffect } from "react";
+import { useLocation, Link, useNavigate } from "react-router-dom";
+import Navbar from "../Componentes/Navbar";
+import Swal from 'sweetalert2';
+import axios from 'axios';
+import "./styleHome.css";
+import star1 from "../assets/Star 1.png";
+import star2 from "../assets/Star 2(1).png";
 
 // Recientes
 const RecienteCard = ({ title, author }) => (
- 
   <Link to="/ranking" className="reciente-card-link">
     <div className="reciente-card">
       <div className="reciente-card-image"></div>
@@ -24,46 +24,71 @@ const RecienteCard = ({ title, author }) => (
   </Link>
 );
 
-
-
 function HomePage() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [datos, setDatos] = useState(location.state?.datos);
 
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const id = localStorage.getItem("id");
+      console.log(id);
+      if (!datos && id) {
+        try {
+          const userDataPayload = { id };
+          const response = await axios.post(
+            "http://localhost:3001/getUserData",
+            userDataPayload
+          );
+          if (response.data?.msg?.[0]?.[0]) {
+            setDatos(response.data.msg[0][0]);
+          }
+        } catch (error) {
+          console.error("Error en la petición:", error);
+          Swal.fire({
+            title: "Error",
+            text: "Error al buscar los datos del usuario.",
+            icon: "error",
+          });
+        }
+      } else if (id === null) {
+        navigate(-1);
+      }
+    };
+    fetchUserData();
+  }, [datos]);
 
+  const [embeds, setEmbeds] = useState(
+    Array.from({ length: 12 }).map((_, i) => ({
+      id: i + 1,
+      title: "Pokémon",
+      likes: 20,
+      comments: 20,
+    }))
+  );
 
- const [embeds, setEmbeds] = useState(
-     Array.from({ length: 12 }).map((_, i) => ({
-       id: i + 1,
-       title: "Pokémon",
-       likes: 20,
-       comments: 20,
-     }))
-   );
- 
-   // Modal de eliminación
-   const [toDeleteId, setToDeleteId] = useState(null);
- 
-   const openDeleteModal = (id) => setToDeleteId(id);
-   const closeDeleteModal = () => setToDeleteId(null);
-   const confirmDelete = () => {
-     // TODO: aquí llamas a tu API (DELETE /embeds/:id)
-     setEmbeds((prev) => prev.filter((e) => e.id !== toDeleteId));
-     closeDeleteModal();
-   };
- 
+  // Modal de eliminación
+  const [toDeleteId, setToDeleteId] = useState(null);
 
+  const openDeleteModal = (id) => setToDeleteId(id);
+  const closeDeleteModal = () => setToDeleteId(null);
+  const confirmDelete = () => {
+    // TODO: aquí llamas a tu API (DELETE /embeds/:id)
+    setEmbeds((prev) => prev.filter((e) => e.id !== toDeleteId));
+    closeDeleteModal();
+  };
 
-  
   // Datos de ejemplo
-  const recientes = Array(10).fill({ title: 'Pokémon', author: 'Jordi' });
+  const recientes = Array(10).fill({ title: "Pokémon", author: "Jordi" });
   const siguiendo = [
-    { name: 'Jordi', pic: 'https://placehold.co/40x40/E58D00/1E1B3A?text=J' },
-    { name: 'Maye', pic: 'https://placehold.co/40x40/00B0FF/1E1B3A?text=M' },
-    { name: 'Wiskas', pic: 'https://placehold.co/40x40/2C264C/FFFFFF?text=W' }
+    { name: "Jordi", pic: "https://placehold.co/40x40/E58D00/1E1B3A?text=J" },
+    { name: "Maye", pic: "https://placehold.co/40x40/00B0FF/1E1B3A?text=M" },
+    { name: "Wiskas", pic: "https://placehold.co/40x40/2C264C/FFFFFF?text=W" },
   ];
   const top = [
-      { title: 'Top', artist: 'prettynightmare', album: 'phunk rocker' },
-      { title: 'Stylus', artist: 'stylus', album: '' }
-  ]
+    { title: "Top", artist: "prettynightmare", album: "phunk rocker" },
+    { title: "Stylus", artist: "stylus", album: "" },
+  ];
 
   return (
     <div className="page-container">
@@ -72,21 +97,19 @@ function HomePage() {
       <div className="color"></div>
       <Navbar />
       <main className="content-wrapper home-content-wrapper">
-        
         <div className="home-left-column">
           <div className="box2 top-list">
             {top.map((item, index) => (
-              <Link to={`/Ranking/`}> 
+              <Link to={`/Ranking/`}>
                 <div className="top-item" key={index}>
-                <div className="top-item-icon">M</div>
-                <div className="top-item-info">
-                  <h4>{item.title}</h4>
-                  <p>{item.artist}</p>
-                  <span>{item.album}</span>
+                  <div className="top-item-icon">M</div>
+                  <div className="top-item-info">
+                    <h4>{item.title}</h4>
+                    <p>{item.artist}</p>
+                    <span>{item.album}</span>
+                  </div>
                 </div>
-              </div>
               </Link>
-            
             ))}
           </div>
           <div className="box2 siguiendo-list">
@@ -94,11 +117,14 @@ function HomePage() {
             {siguiendo.map((user, index) => (
               <Link to={`/perfil/`}>
                 <div key={index} className="siguiendo-item">
-                  <img src={user.pic} alt={`Foto de ${user.name}`} className="siguiendo-pic" />
+                  <img
+                    src={user.pic}
+                    alt={`Foto de ${user.name}`}
+                    className="siguiendo-pic"
+                  />
                   <p>{user.name}</p>
                 </div>
               </Link>
-              
             ))}
           </div>
         </div>
@@ -108,26 +134,26 @@ function HomePage() {
           <div className="box2 recientes-container">
             <h3>Recientes</h3>
             <div className="recientes-grid">
-                 {embeds.map((it) => (
-                     
-                      <Link 
-                          //key={it.id} 
-                          to={`/Ranking/`}  //${it.id}
-                          className="pf-card-link"
-                        >
-                        <article className="pf-card"> 
-                          <header className="pf-card-title">{it.title}</header>
-                          <div className="pf-metrics">
-                            <span><img src={star2} alt="Estrella vacía" />  {it.likes}</span>
-                            <span>💬 {it.comments}</span>
-                          </div>
-                        </article>
-                      </Link>
-                    ))}
-              </div>
+              {embeds.map((it) => (
+                <Link
+                  //key={it.id}
+                  to={`/Ranking/`} //${it.id}
+                  className="pf-card-link"
+                >
+                  <article className="pf-card">
+                    <header className="pf-card-title">{it.title}</header>
+                    <div className="pf-metrics">
+                      <span>
+                        <img src={star2} alt="Estrella vacía" /> {it.likes}
+                      </span>
+                      <span>💬 {it.comments}</span>
+                    </div>
+                  </article>
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
-        
       </main>
     </div>
   );
