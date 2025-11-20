@@ -19,10 +19,20 @@ app.listen(3001, () => {
 const db = mysql2.createConnection({
   host: "localhost",
   user: "root",
-  password: "$0lstici0XD",
+  password: "mayo",
   database: "PWII",
   port: 3306,
 });
+
+/* MAYO
+const db = mysql2.createConnection({
+  host: "localhost",
+  user: "root",
+  password: "mayo",
+  database: "PWII",
+  port: 3306,
+});
+*/
 
 const filefilter = (req, file, cb) => {
   const formatos = ["image/png", "image/jpg", "image/jpeg"];
