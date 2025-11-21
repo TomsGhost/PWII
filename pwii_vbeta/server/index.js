@@ -24,16 +24,6 @@ const db = mysql2.createConnection({
   port: 3306,
 });
 
-/* MAYO
-const db = mysql2.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "mayo",
-  database: "PWII",
-  port: 3306,
-});
-*/
-
 const filefilter = (req, file, cb) => {
   const formatos = ["image/png", "image/jpg", "image/jpeg"];
 
@@ -171,8 +161,6 @@ app.get("/getCommentsByPostId/:id", (req, resp) => {
           msg: "Error interno del servidor al obtener los comentarios.",
         });
       }
-      // The result from a stored procedure call is often an array containing multiple result sets.
-      // We are interested in the first one, which contains the comments.
       resp.json(result[0]);
     }
   );
@@ -203,7 +191,6 @@ app.get("/verificar-seguimiento", (req, resp) => {
     resp.json({ sigue_actualmente: sigue_actualmente });
   });
 });
-
 
 app.get("/posts/:id", (req, resp) => {
   const { id } = req.params;
@@ -354,7 +341,6 @@ app.get("/feed/:userId", (req, resp) => {
   });
 });
 
-
 app.post("/addFavorite", (req, resp) => {
   const { id_usuario, id_publicacion, descripcion } = req.body;
 
@@ -394,30 +380,30 @@ app.post("/addFavorite", (req, resp) => {
 });
 
 app.post("/removeFavorite", (req, resp) => {
-    const { id_usuario, id_publicacion } = req.body;
+  const { id_usuario, id_publicacion } = req.body;
 
-    if (!id_usuario || !id_publicacion) {
-        return resp.status(400).json({ msg: "Faltan los IDs de usuario o publicación." });
+  if (!id_usuario || !id_publicacion) {
+    return resp.status(400).json({ msg: "Faltan los IDs de usuario o publicación." });
+  }
+
+  db.query(
+    "CALL SP_EliminarFavorito(?, ?)",
+    [id_usuario, id_publicacion],
+    (err, result) => {
+      if (err) {
+        console.error("Error al quitar Favorito:", err);
+        return resp.status(500).json({ msg: "Error interno al quitar el Favorito." });
+      }
+
+      const rowsAffected = result && result[0] && result[0][0] ? result[0][0].rows_affected : 0;
+
+      if (rowsAffected > 0) {
+        resp.status(200).json({ msg: "Favorito eliminado exitosamente." });
+      } else {
+        resp.status(404).json({ msg: "La publicación no se encontró en favoritos." });
+      }
     }
-
-    db.query(
-        "CALL SP_EliminarFavorito(?, ?)",
-        [id_usuario, id_publicacion],
-        (err, result) => {
-            if (err) {
-                console.error("Error al quitar Favorito:", err);
-                return resp.status(500).json({ msg: "Error interno al quitar el Favorito." });
-            }
-            
-            const rowsAffected = result && result[0] && result[0][0] ? result[0][0].rows_affected : 0;
-            
-            if (rowsAffected > 0) {
-                resp.status(200).json({ msg: "Favorito eliminado exitosamente." });
-            } else {
-                resp.status(404).json({ msg: "La publicación no se encontró en favoritos." });
-            }
-        }
-    );
+  );
 });
 
 app.get("/favorites/:userId", (req, resp) => {
@@ -430,7 +416,6 @@ app.get("/favorites/:userId", (req, resp) => {
         .status(500)
         .json({ msg: "Error interno del servidor al obtener favoritos." });
     }
-    // El resultado viene en result[0]
     resp.json(result[0]);
   });
 });
@@ -442,16 +427,15 @@ app.post("/follow", (req, resp) => {
     return resp.status(400).json({ msg: "Faltan los parámetros 'seguidorId' o 'seguidoId'." });
   }
 
-  const query = "CALL SP_SeguirUsuario(?, ?)"; 
+  const query = "CALL SP_SeguirUsuario(?, ?)";
   const params = [seguidorId, seguidoId];
 
   db.query(query, params, (err, result) => {
     if (err) {
-       // ... (resto de tu código de error)
-       if (err.sqlState === "45000") {
-         return resp.status(409).json({ msg: err.sqlMessage });
-       }
-       return resp.status(500).json({ msg: "Error interno." });
+      if (err.sqlState === "45000") {
+        return resp.status(409).json({ msg: err.sqlMessage });
+      }
+      return resp.status(500).json({ msg: "Error interno." });
     }
     resp.json({ msg: "Ahora sigues a este usuario." });
   });
@@ -464,8 +448,7 @@ app.post("/unfollow", (req, resp) => {
     return resp.status(400).json({ msg: "Faltan los parámetros." });
   }
 
-  // CORRECCIÓN: Agregamos "SP_" aquí
-  const query = "CALL SP_DejarDeSeguirUsuario(?, ?)"; 
+  const query = "CALL SP_DejarDeSeguirUsuario(?, ?)";
   const params = [seguidorId, seguidoId];
 
   db.query(query, params, (err, result) => {
@@ -484,7 +467,6 @@ app.get("/verificar-seguimiento", (req, resp) => {
     return resp.status(400).json({ msg: "Faltan parámetros." });
   }
 
-  // AGREGAMOS "SP_" AQUÍ (Asegúrate de crear este procedimiento en SQL, ver Paso 2)
   const query = "CALL SP_VerificarSiSigue(?, ?)";
   const params = [seguidorId, seguidoId];
 
@@ -493,7 +475,6 @@ app.get("/verificar-seguimiento", (req, resp) => {
       console.error("Error al verificar:", err);
       return resp.status(500).json({ msg: "Error interno." });
     }
-    // Ajuste para leer la respuesta del SP
     const sigue_actualmente = result && result[0] && result[0][0] ? result[0][0].sigue_actualmente : 0;
     resp.json({ sigue_actualmente: sigue_actualmente });
   });
@@ -540,12 +521,10 @@ app.get("/getTopCommented", (req, resp) => {
 });
 
 app.get("/search", (req, resp) => {
-  // Se espera algo como: localhost:3001/search?q=pokemon
   const { q } = req.query;
 
-  // Si no envían nada o envían vacío, devolvemos array vacío o error, tú decides.
   if (!q) {
-    return resp.json([]); 
+    return resp.json([]);
   }
 
   db.query("CALL SP_BuscarPublicaciones(?)", [q], (err, result) => {
@@ -553,7 +532,6 @@ app.get("/search", (req, resp) => {
       console.error("Error en la búsqueda:", err);
       return resp.status(500).json({ msg: "Error interno al buscar." });
     }
-    // Devolvemos la lista de resultados
     resp.json(result[0]);
   });
 });
