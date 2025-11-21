@@ -535,3 +535,136 @@ app.get("/search", (req, resp) => {
     resp.json(result[0]);
   });
 });
+
+app.post("/addLike", (req, resp) => {
+  const { id_usuario, id_publicacion } = req.body;
+
+  if (!id_usuario || !id_publicacion) {
+    return resp
+      .status(400)
+      .json({ msg: "Faltan los parámetros id_usuario o id_publicacion." });
+  }
+
+  db.query(
+    "CALL SP_AgregarMeGusta(?, ?)",
+    [id_usuario, id_publicacion],
+    (err, result) => {
+      if (err) {
+        console.error("Error en la consulta a la BD:", err);
+        return resp
+          .status(500)
+          .json({ msg: "Error interno del servidor al agregar Me gusta." });
+      }
+      resp.json({
+        msg: "Me gusta agregado correctamente.",
+      });
+    }
+  );
+});
+
+app.post("/removeLike", (req, resp) => {
+  const { id_usuario, id_publicacion } = req.body;
+
+  if (!id_usuario || !id_publicacion) {
+    return resp
+      .status(400)
+      .json({ msg: "Faltan los parámetros id_usuario o id_publicacion." });
+  }
+
+  db.query(
+    "CALL SP_EliminarMeGusta(?, ?)",
+    [id_usuario, id_publicacion],
+    (err, result) => {
+      if (err) {
+        console.error("Error en la consulta a la BD:", err);
+        return resp
+          .status(500)
+          .json({ msg: "Error interno al eliminar Me gusta." });
+      }
+
+      const rowsAffected =
+        result && result[0] && result[0][0] ? result[0][0].rows_affected : 0;
+
+      if (rowsAffected > 0) {
+        resp.json({ msg: "Me gusta eliminado correctamente." });
+      } else {
+        resp
+          .status(404)
+          .json({ msg: "No se encontró el Me gusta o ya fue eliminado." });
+      }
+    }
+  );
+});
+
+app.post("/toggleLike", (req, resp) => {
+  const { id_usuario, id_publicacion } = req.body;
+
+  if (!id_usuario || !id_publicacion) {
+    return resp
+      .status(400)
+      .json({ msg: "Faltan los parámetros id_usuario o id_publicacion." });
+  }
+
+  db.query(
+    "CALL SP_AlternarMeGusta(?, ?)",
+    [id_usuario, id_publicacion],
+    (err, result) => {
+      if (err) {
+        console.error("Error en la consulta a la BD:", err);
+        return resp
+          .status(500)
+          .json({ msg: "Error interno al alternar el Me gusta." });
+      }
+
+      const accion =
+        result && result[0] && result[0][0]
+          ? result[0][0].accion_realizada
+          : "desconocido";
+
+      resp.json({
+        msg: `Me gusta ${accion} correctamente.`,
+        status: accion, 
+      });
+    }
+  );
+});
+
+app.get("/lastLikes/:id", (req, resp) => {
+  const { id } = req.params;
+
+  if (!id) {
+    return resp.status(400).json({ msg: "El ID de usuario es requerido." });
+  }
+
+  db.query("CALL SP_ObtenerUltimos3MeGusta(?)", [id], (err, result) => {
+    if (err) {
+      console.error("Error al obtener últimos likes:", err);
+      return resp.status(500).json({
+        msg: "Error interno del servidor al obtener los likes.",
+      });
+    }
+    resp.json(result[0]);
+  });
+});
+
+app.put("/deleteUser/:id", (req, resp) => {
+  const { id } = req.params;
+
+  db.query("CALL SP_BajaLogicaUsuario(?)", [id], (err, result) => {
+    if (err) {
+      console.error("Error al dar de baja al usuario:", err);
+      return resp.status(500).json({
+        msg: "Error interno del servidor al intentar eliminar el usuario.",
+      });
+    }
+
+    const rowsAffected =
+      result && result[0] && result[0][0] ? result[0][0].rows_affected : 0;
+
+    if (rowsAffected > 0) {
+      resp.json({ msg: "Usuario eliminado correctamente (baja lógica)." });
+    } else {
+      resp.status(404).json({ msg: "Usuario no encontrado." });
+    }
+  });
+});

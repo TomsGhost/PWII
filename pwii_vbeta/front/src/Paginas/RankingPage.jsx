@@ -9,26 +9,19 @@ function RankingPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   
-  // Recuperamos el ID del usuario
   const userId = localStorage.getItem("id");
 
-  // --- ESTADOS ---
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
   
-  // Estado para comentarios del post actual
   const [comentarios, setComentarios] = useState([]);
   const [nuevoComentario, setNuevoComentario] = useState("");
   const [errors, setErrors] = useState({});
 
-  // Estados de interacción
   const [isLiked, setIsLiked] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
 
-  // NUEVO: Estado para la lista lateral (Top Comentados)
   const [topCommented, setTopCommented] = useState([]);
-
-  // 1. FETCH PARA LA LISTA LATERAL (TOP COMENTADOS)
   useEffect(() => {
     const fetchTopCommented = async () => {
       try {
@@ -44,7 +37,6 @@ function RankingPage() {
     fetchTopCommented();
   }, []);
 
-  // 2. FETCH DE COMENTARIOS DEL POST ACTUAL
   const fetchComments = useCallback(async () => {
     try {
       const response = await fetch(
@@ -60,7 +52,6 @@ function RankingPage() {
     }
   }, [id]);
 
-  // 3. FETCH DEL POST ACTUAL Y SUS DATOS
   useEffect(() => {
     const fetchPostAndComments = async () => {
       try {
@@ -172,8 +163,8 @@ function RankingPage() {
     }
 
     const endpoint = isLiked
-      ? "http://localhost:3001/removeLike"
-      : "http://localhost:3001/addLike";
+      ? "http://localhost:3001/toggleLike"
+      : "http://localhost:3001/toggleLike";
 
     try {
       const response = await fetch(endpoint, {
@@ -200,7 +191,6 @@ function RankingPage() {
     }
   };
 
-  // --- NAVEGACIÓN A FAVORITOS ---
   const handleFavoriteNavigation = () => {
     if (!userId) {
       Swal.fire("Error", "Debe iniciar sesión para guardar favoritos.", "error");
@@ -225,14 +215,13 @@ function RankingPage() {
         <div className="color"></div>
         <div className="color"></div>
 
-        {/* IZQUIERDA: LISTA TOP COMENTADOS */}
         <div className="box column-left">
           <h3>Más Debatidos</h3>
           {topCommented.length > 0 ? (
             topCommented.map((item, index) => (
               <Link to={`/Ranking/${item.id}`} key={item.id}>
                 <div className="list" style={{ display: 'flex', alignItems: 'center', padding: '10px', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-                  {/* Número de Ranking */}
+                  
                   <div style={{ 
                       fontSize: '1.5rem', 
                       fontWeight: 'bold', 
@@ -242,7 +231,7 @@ function RankingPage() {
                     #{index + 1}
                   </div>
                   
-                  {/* Info del Post */}
+                  
                   <div style={{ display: 'flex', flexDirection: 'column' }}>
                      <span style={{ fontWeight: 'bold', color: '#fff' }}>
                        {item.titulo}
@@ -259,7 +248,6 @@ function RankingPage() {
           )}
         </div>
 
-        {/* DERECHA: DETALLE DEL POST */}
         <div className="column-right">
           {loading ? (
             <p>Cargando publicación...</p>
@@ -283,7 +271,6 @@ function RankingPage() {
             <p>La publicación no fue encontrada.</p>
           )}
 
-          {/* CAJA DE COMENTARIOS */}
           <div className="box2 box-comments">
             <h3>Comentarios</h3>
             <div className="comment-section">

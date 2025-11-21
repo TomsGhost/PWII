@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, Link, useNavigate } from "react-router-dom";
 import Navbar from "../Componentes/Navbar";
-import Swal from 'sweetalert2';
-import axios from 'axios';
+import Swal from "sweetalert2";
+import axios from "axios";
 import "./styleHome.css";
 import star2 from "../assets/Star 2(1).png";
 
@@ -10,20 +10,21 @@ function HomePage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // --- ESTADOS ---
-  const [datos, setDatos] = useState(location.state?.datos); // Datos del usuario logueado
-  const [followingList, setFollowingList] = useState([]);    // Lista de usuarios seguidos
-  const [embeds, setEmbeds] = useState([]);                  // Publicaciones recientes
-  const [topPosts, setTopPosts] = useState([]);              // Top 3 Publicaciones
+  const [datos, setDatos] = useState(location.state?.datos);
+  const [followingList, setFollowingList] = useState([]);
+  const [embeds, setEmbeds] = useState([]);
+  const [topPosts, setTopPosts] = useState([]);
 
-  // 1. OBTENER DATOS DEL USUARIO LOGUEADO (Seguridad)
   useEffect(() => {
     const fetchUserData = async () => {
       const id = localStorage.getItem("id");
-      
+
       if (!datos && id) {
         try {
-          const response = await axios.post("http://localhost:3001/getUserData", { id });
+          const response = await axios.post(
+            "http://localhost:3001/getUserData",
+            { id }
+          );
           if (response.data?.msg?.[0]?.[0]) {
             setDatos(response.data.msg[0][0]);
           }
@@ -38,13 +39,14 @@ function HomePage() {
     fetchUserData();
   }, [datos, navigate]);
 
-  // 2. OBTENER LISTA DE "SIGUIENDO"
   useEffect(() => {
     const fetchFollowing = async () => {
       const id = localStorage.getItem("id");
       if (id) {
         try {
-          const response = await axios.get(`http://localhost:3001/getFollowing/${id}`);
+          const response = await axios.get(
+            `http://localhost:3001/getFollowing/${id}`
+          );
           if (response.data) {
             setFollowingList(response.data);
           }
@@ -56,7 +58,6 @@ function HomePage() {
     fetchFollowing();
   }, []);
 
-  // 3. OBTENER PUBLICACIONES RECIENTES (FEED)
   useEffect(() => {
     const fetchPosts = async () => {
       try {
@@ -76,7 +77,6 @@ function HomePage() {
     fetchPosts();
   }, []);
 
-  // 4. OBTENER TOP 3 PUBLICACIONES (NUEVO)
   useEffect(() => {
     const fetchTopPosts = async () => {
       try {
@@ -97,20 +97,15 @@ function HomePage() {
       <div className="color"></div>
       <div className="color"></div>
       <Navbar />
-      
+
       <main className="content-wrapper home-content-wrapper">
-        
-        {/* --- COLUMNA IZQUIERDA --- */}
         <div className="home-left-column">
-          
-          {/* SECCIÓN TOP 3 */}
           <div className="box2 top-list">
             <h3>Top Popular</h3>
             {topPosts.length > 0 ? (
               topPosts.map((item, index) => (
                 <Link to={`/Ranking/${item.id}`} key={item.id}>
                   <div className="top-item">
-                    {/* Muestra el número 1, 2 o 3 */}
                     <div className="top-item-icon">{index + 1}</div>
                     <div className="top-item-info">
                       <h4>{item.titulo}</h4>
@@ -125,7 +120,6 @@ function HomePage() {
             )}
           </div>
 
-          {/* SECCIÓN SIGUIENDO */}
           <div className="box2 siguiendo-list">
             <h3>Siguiendo</h3>
             {followingList.length > 0 ? (
@@ -133,8 +127,8 @@ function HomePage() {
                 <Link to={`/perfil/${user.id}`} key={user.id}>
                   <div className="siguiendo-item">
                     <img
-                      src={user.fotografia || "https://dummyimage.com/40x40/2C264C/FFFFFF?text=" + user.nombre_usuario.charAt(0)}
-                      alt={`Foto de ${user.nombre_usuario}`}
+                      src={`https://ui-avatars.com/api/?name=${user.nombre_usuario}&background=random&color=fff`}
+                      alt={`Avatar de ${user.nombre_usuario}`}
                       className="siguiendo-pic"
                     />
                     <p>{user.nombre_usuario}</p>
@@ -149,17 +143,16 @@ function HomePage() {
           </div>
         </div>
 
-        {/* --- COLUMNA DERECHA --- */}
         <div className="home-right-column">
           <h1 className="home-title">Más de lo que ves...</h1>
-          
+
           <div className="box2 recientes-container">
             <h3>Recientes</h3>
             <div className="recientes-grid">
               {embeds.map((it) => (
                 <Link
                   key={it.id}
-                  to={`/Ranking/${it.id}`} // Asumiendo que Ranking muestra el detalle del post
+                  to={`/Ranking/${it.id}`}
                   className="pf-card-link"
                 >
                   <article className="pf-card">

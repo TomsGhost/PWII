@@ -8,19 +8,17 @@ import Navbar from '../Componentes/Navbar';
 
 export default function Perfil() {
   const { id } = useParams();
-  const loggedInUserIdFromLocalStorage = localStorage.getItem("id");
   
   const [perfilData, setPerfilData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [embeds, setEmbeds] = useState([]);
-  
-  // 1. ESTADO PARA FAVORITOS
   const [favoritos, setFavoritos] = useState([]);
+  
+  const [lastLikes, setLastLikes] = useState([]);
 
   const [isFollowing, setIsFollowing] = useState(false);
   const [toDeleteId, setToDeleteId] = useState(null);
 
-  // Fetch Datos Usuario
   useEffect(() => {
     const fetchUserData = async () => {
       try {
@@ -38,7 +36,6 @@ export default function Perfil() {
     if (id) fetchUserData();
   }, [id]);
 
-  // Fetch Publicaciones
   useEffect(() => {
     const fetchPostsData = async () => {
       try {
@@ -53,7 +50,6 @@ export default function Perfil() {
     if (id) fetchPostsData();
   }, [id]);
 
-  // 2. FETCH FAVORITOS (Lógica Backend)
   useEffect(() => {
     const fetchFavorites = async () => {
       try {
@@ -68,7 +64,21 @@ export default function Perfil() {
     if (id) fetchFavorites();
   }, [id]);
 
-  // Fetch Seguimiento
+  useEffect(() => {
+    const fetchLastLikes = async () => {
+      try {
+        const response = await axios.get(`http://localhost:3001/lastLikes/${id}`);
+        if (response.data) {
+          setLastLikes(response.data);
+        }
+      } catch (error) {
+        console.error("Error fetching last likes:", error);
+      }
+    };
+    if (id) fetchLastLikes();
+  }, [id]);
+
+  // --- FETCH: Estado de seguimiento ---
   useEffect(() => {
     const checkFollowingStatus = async () => {
       const seguidorId = localStorage.getItem("id");
@@ -89,6 +99,7 @@ export default function Perfil() {
     if (id) checkFollowingStatus();
   }, [id]);
 
+  // --- HANDLERS ---
   const handleFollowToggle = async () => {
     const seguidorId = localStorage.getItem("id");
     const seguidoId = id;
@@ -128,6 +139,7 @@ export default function Perfil() {
     }
   };
 
+  // --- RENDER ---
   if (loading) return <div>Cargando perfil...</div>;
   if (!perfilData) return <div>No se encontraron datos del perfil.</div>;
 
@@ -142,8 +154,8 @@ export default function Perfil() {
           <div className="pf-avatar-wrap">
             <img
               className="pf-avatar"
-              src={perfilData.fotografia || "https://dummyimage.com/200x200/222/ffffff.jpg&text=Avatar"}
-              alt="Avatar de usuario"
+               src={`https://ui-avatars.com/api/?name=${perfilData.nombre_usuario}&background=random&color=fff`}
+                alt={`Avatar de ${perfilData.nombre_usuario}`}
             />
             <div className="pf-squares pf-squares-left">
               <span className="pf-square" style={{ "--d": "0s" }} />
@@ -177,30 +189,35 @@ export default function Perfil() {
           </div>
 
           <div className="pf-likes">
-            <h3>Me gusta</h3>
+            <h3>Recientemente le gustó:</h3>
             <ul>
-              <li><Link to="/ranking">Pokémon</Link></li>
-              <li><Link to="#">Pokémon</Link></li>
-              <li><Link to="#">Pokémon</Link></li>
+              {lastLikes.length > 0 ? (
+                lastLikes.map((like) => (
+                  <li key={like.id}>
+                    <Link to={`/post/${like.id}`}>
+                      {like.titulo}
+                    </Link>
+                  </li>
+                ))
+              ) : (
+                <li style={{ color: "#888", fontStyle: "italic" }}>
+                  Sin actividad reciente
+                </li>
+              )}
             </ul>
           </div>
 
-          {/* 3. AQUÍ VA LA LÓGICA DE FAVORITOS SIN ROMPER ESTILOS */}
           <div className="pf-mini">
             {favoritos.length > 0 ? (
               favoritos.map((fav) => (
                 <div key={fav.favorito_id} className="pf-mini-item">
-                  {/* Player del embed */}
                   <SpotifyPlayer embedUrl={fav.embed_code} height="80" />
-                  
-                  {/* Título y Nota (Renderizado simple) */}
                   <div className="pf-mini-content">
                     <p className="pf-fav-note">{fav.nota_favorito}</p>
                   </div>
                 </div>
               ))
             ) : (
-              // Si no hay favoritos, mostramos uno vacío o el player por defecto como tenías
               <SpotifyPlayer />
             )}
           </div>

@@ -20,27 +20,26 @@ const ProfileEmbedCard = ({ id, title, likes, comments, openDeleteModal, isOwner
                 
                 {isOwner && (
                     <footer className="pf-actions">
-                        {/* Botón de Editar */}
+                        
                         <button 
                             type="button"
                             className="pf-act pf-edit" 
                             title="Editar embed"
                             onClick={(e) => {
-                                e.preventDefault(); // 👈 ESTA LÍNEA ES CLAVE
-                                e.stopPropagation(); // Detiene la propagación al Link
+                                e.preventDefault(); 
+                                e.stopPropagation();
                                 navigate(`/edit-embed/${id}`);
                             }} 
                         >
                             ✏️
                         </button>
                         
-                        {/* Botón de Eliminar */}
                         <button
                             type="button"
                             className="pf-act pf-del"
                             title="Eliminar embed"
                             onClick={(e) => {
-                                e.preventDefault(); // También agrégalo aquí por seguridad
+                                e.preventDefault(); 
                                 e.stopPropagation(); 
                                 openDeleteModal(id);
                             }}

@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
@@ -19,9 +18,9 @@ function App() {
   return (
     
      <BrowserRouter>
-      <Routes>e
+      <Routes>
         <Route path="/" element={<LoginForm />} />
-        <Route path="/register" element={<RegisterForm />} /> //corregir lo de las fotos
+        <Route path="/register" element={<RegisterForm />} /> 
         <Route path="/inicio" element={<Inicio />} />
         <Route path="/HomePage" element={<HomePage />} /> 
         <Route path="/SearchPage" element={<SearchPage />} /> //

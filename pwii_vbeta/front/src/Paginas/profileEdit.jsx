@@ -5,22 +5,17 @@ import "./profileEdit.css";
 import Swal from "sweetalert2";
 
 export default function EditProfile() {
-    // Hooks importados pero no inicializados:
     const navigate = useNavigate();
-    const fileInputRef = useRef(null); // 👈 SOLUCIÓN 1: Definir la referencia
+    const fileInputRef = useRef(null); 
     
-    // Obteniendo datos iniciales (Correcto)
     const location = useLocation();
     const { username: initialUsername, avatar: initialAvatar } = location.state || {};
 
-    // Estados de datos
     const [username, setUsername] = useState(initialUsername || "");
     const [avatar, setAvatar] = useState(initialAvatar || null);
     
-    // 👈 SOLUCIÓN 2: Definir el estado de errores
     const [errors, setErrors] = useState({}); 
 
-    // Ahora `fileInputRef` sí está definido
     const handlePickFile = () => fileInputRef.current?.click();
 
     const handleFile = (e) => {
@@ -47,7 +42,6 @@ export default function EditProfile() {
             newErrors.username = "El nombre de usuario contiene caracteres no válidos.";
         }
 
-        // Aquí 'setErrors' y 'newErrors' (que es errors) ya están definidos
         setErrors(newErrors); 
         if (Object.keys(newErrors).length > 0) {
             Swal.fire({
@@ -59,8 +53,7 @@ export default function EditProfile() {
         }
 
         console.log("Guardar perfil:", { username });
-        // Aquí 'navigate' ya está definido
-        navigate("/Perfil"); 
+        navigate(-1); 
     };
 
     return (
@@ -71,28 +64,17 @@ export default function EditProfile() {
             <Navbar />
 
             <section className="pe-section">
-                {/* ... (resto del código del fondo y cuadrados) ... */}
                 
                 <main className="pe-container">
                     <form className="pe-card" onSubmit={handleSave}>
                         <div className="pe-avatar-wrap">
                             <img
                                 className="pe-avatar"
-                                src={
-                                    avatar ??
-                                    "https://dummyimage.com/240x240/222/ffffff.jpg&text=Avatar"
-                                }
-                                alt="Avatar de usuario"
+                                src={`https://ui-avatars.com/api/?name=${username}&background=random&color=fff`}
+                                alt={`Avatar de ${username}`}
                             />
-                            <button
-                                type="button"
-                                className="pe-btn pe-btn-secondary"
-                                onClick={handlePickFile}
-                            >
-                                Cambiar
-                            </button>
+
                             <input
-                                // Aquí 'fileInputRef' ya está definido
                                 ref={fileInputRef} 
                                 type="file"
                                 accept="image/*"
@@ -112,11 +94,9 @@ export default function EditProfile() {
                                 aria-label="Nombre de usuario"
                                 onChange={(e) => {
                                     setUsername(e.target.value);
-                                    // Aquí 'errors' y 'setErrors' ya están definidos
                                     if (errors.username) setErrors({ ...errors, username: null }); 
                                 }}
                             />
-                            {/* Aquí 'errors' ya está definido */}
                             {errors.username && <p className="error-text">{errors.username}</p>}
                         </div>
 

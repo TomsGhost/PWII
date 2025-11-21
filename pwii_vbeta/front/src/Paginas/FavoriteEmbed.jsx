@@ -10,13 +10,11 @@ export default function FavoriteEmbed() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // 1. RECUPERAR DATOS
-  const postId = location.state?.postId;     // Viene de RankingPage
-  const userId = localStorage.getItem("id"); // Viene de LocalStorage
+  const postId = location.state?.postId;     
+  const userId = localStorage.getItem("id"); 
 
-  // 2. VALIDACIÓN DE ENTRADA
   useEffect(() => {
-    // Imprimir en consola para depurar
+
     console.log("Datos recibidos -> PostID:", postId, "| UserID:", userId);
 
     if (!postId || !userId) {
@@ -26,14 +24,14 @@ export default function FavoriteEmbed() {
         icon: "warning",
         confirmButtonText: "Volver"
       }).then(() => {
-        navigate(-1); // Regresar a la página anterior
+        navigate(-1); 
       });
     }
   }, [postId, userId, navigate]);
 
   const onSubmit = async (e) => {
     e.preventDefault();
-    // ... (Tu lógica de validación de errores aquí) ...
+
     let newErrors = {};
     if (!note.trim()) newErrors.note = "La nota es obligatoria.";
     setErrors(newErrors);
@@ -54,7 +52,7 @@ export default function FavoriteEmbed() {
 
       if (response.ok) {
         await Swal.fire("¡Guardado!", "Añadido a favoritos.", "success");
-        navigate(-1); // O navigate(-1) para volver a la canción
+        navigate(-1); // O navigate(-1)
       } else {
         Swal.fire("Error", data.msg || "No se pudo guardar.", "error");
       }
