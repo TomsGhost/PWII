@@ -516,3 +516,44 @@ app.get("/getFollowing/:id", (req, resp) => {
     resp.json(result[0]);
   });
 });
+
+app.get("/getTopPosts", (req, resp) => {
+  db.query("CALL SP_ObtenerTop3Publicaciones()", (err, result) => {
+    if (err) {
+      console.error("Error al obtener el top de publicaciones:", err);
+      return resp.status(500).json({
+        msg: "Error interno del servidor al obtener el top.",
+      });
+    }
+    resp.json(result[0]);
+  });
+});
+
+app.get("/getTopCommented", (req, resp) => {
+  db.query("CALL SP_ObtenerTop5MasComentadas()", (err, result) => {
+    if (err) {
+      console.error("Error al obtener top comentados:", err);
+      return resp.status(500).json({ msg: "Error interno." });
+    }
+    resp.json(result[0]);
+  });
+});
+
+app.get("/search", (req, resp) => {
+  // Se espera algo como: localhost:3001/search?q=pokemon
+  const { q } = req.query;
+
+  // Si no envían nada o envían vacío, devolvemos array vacío o error, tú decides.
+  if (!q) {
+    return resp.json([]); 
+  }
+
+  db.query("CALL SP_BuscarPublicaciones(?)", [q], (err, result) => {
+    if (err) {
+      console.error("Error en la búsqueda:", err);
+      return resp.status(500).json({ msg: "Error interno al buscar." });
+    }
+    // Devolvemos la lista de resultados
+    resp.json(result[0]);
+  });
+});

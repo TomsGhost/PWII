@@ -3,50 +3,22 @@ import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../Componentes/Navbar";
 import "./styleSearch.css";
 import Swal from "sweetalert2";
-import star1 from '../assets/Star 1.png';
-import star2 from '../assets/Star 2(1).png';
-
-const SearchResultCard = ({ title, author }) => (
-  <div className="search-card">
-    <h4>{title}</h4>
-    <p>{author}</p>
-    <div className="search-card-stats">
-      <span>+ 20</span>
-      <span>♥ 20</span>
-    </div>
-  </div>
-);
+import axios from "axios"; // 1. IMPORTANTE: Importar axios
+import star2 from "../assets/Star 2(1).png";
 
 function SearchPage() {
-  const [searchTerm, setSearchTerm] = useState("Girls");
-  
-  const [embeds, setEmbeds] = useState(
-    Array.from({ length: 12 }).map((_, i) => ({
-      id: i + 1,
-      title: "Pokémon",
-      likes: 20,
-      comments: 20,
-    }))
-  );
+  const [searchTerm, setSearchTerm] = useState(""); // Iniciamos vacío
+  const [embeds, setEmbeds] = useState([]); // Iniciamos sin resultados
+  const [hasSearched, setHasSearched] = useState(false); // Para saber si ya buscó
+  const [loading, setLoading] = useState(false); // Estado de carga
 
   const navigate = useNavigate();
 
-  /*
-  const [recentSearches] = useState([
-    { id: 1, title: "Girls like girls", author: "Mercy" },
-    { id: 2, title: "Girls like girls", author: "Mercy" },
-    { id: 3, title: "Girls like girls", author: "Mercy" },
-    { id: 4, title: "Girls like girls", author: "Mercy" },
-    { id: 5, title: "Girls like girls", author: "Mercy" },
-    { id: 6, title: "Girls like girls", author: "Mercy" },
-    { id: 7, title: "Girls like girls", author: "Mercy" },
-    { id: 8, title: "Girls like girls", author: "Mercy" },
-  ]);
-  */
-
-  const handleSearch = (e) => {
+  const handleSearch = async (e) => {
     e.preventDefault();
-    const busquedaRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/;
+
+    // --- TUS VALIDACIONES (Excelentes, las mantenemos) ---
+    const busquedaRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ0-9\s]+$/; // Agregué 0-9 por si buscan "Top 10"
 
     if (!searchTerm.trim()) {
       Swal.fire({
@@ -58,42 +30,47 @@ function SearchPage() {
     }
 
     if (searchTerm.length > 149) {
-        Swal.fire({
-            title: "Error",
-            text: "La búsqueda no debe superar los 149 caracteres.",
-            icon: "error",
-          });
+      Swal.fire({
+        title: "Error",
+        text: "La búsqueda no debe superar los 149 caracteres.",
+        icon: "error",
+      });
       return;
     }
-    
+
     if (!busquedaRegex.test(searchTerm)) {
-        Swal.fire({
-            title: "Error",
-            text: "La búsqueda solo puede contener letras y espacios.",
-            icon: "error",
-          });
+      Swal.fire({
+        title: "Error",
+        text: "La búsqueda contiene caracteres no válidos.",
+        icon: "error",
+      });
       return;
     }
 
-    console.log("Searching for:", searchTerm);
-    navigate('/Searchpage');
+    // --- LÓGICA DE BÚSQUEDA (CONEXIÓN AL BACKEND) ---
+    try {
+      setLoading(true); // Activamos loading
+      setHasSearched(true); // Marcamos que ya se intentó buscar
+
+      // Llamada al endpoint que creamos
+      const response = await axios.get(
+        `http://localhost:3001/search?q=${searchTerm}`
+      );
+
+      if (response.data) {
+        setEmbeds(response.data); // Guardamos los datos reales de la BD
+      }
+    } catch (error) {
+      console.error("Error en la búsqueda:", error);
+      Swal.fire({
+        title: "Error",
+        text: "Ocurrió un error al conectar con el servidor.",
+        icon: "error",
+      });
+    } finally {
+      setLoading(false); // Desactivamos loading sea éxito o error
+    }
   };
-
-
-  // Modal de eliminación
-  /*
-  const [toDeleteId, setToDeleteId] = useState(null);
-
-  const openDeleteModal = (id) => setToDeleteId(id);
-  const closeDeleteModal = () => setToDeleteId(null);
-  const confirmDelete = () => {
-    // TODO: aquí llamas a tu API (DELETE /embeds/:id)
-    setEmbeds((prev) => prev.filter((e) => e.id !== toDeleteId));
-    closeDeleteModal();
-  };
-  */
-
-
 
   return (
     <div className="page-container">
@@ -102,20 +79,23 @@ function SearchPage() {
       <div className="color"></div>
       <Navbar />
       <main className="content-wrapper search-content-wrapper">
-        <form
-          className="search-bar-container"
-          onSubmit={handleSearch}
-        >
+        {/* BARRA DE BÚSQUEDA */}
+        <form className="search-bar-container" onSubmit={handleSearch}>
+          {/* Si tienes foto de usuario en localStorage puedes ponerla aquí, si no, dejamos la M */}
           <div className="search-bar-icon user-icon">M</div>
+
           <input
             type="text"
             className="search-input"
+            placeholder="Busca canciones, artistas..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
+
           <button
             type="submit"
             className="search-bar-icon search-icon button-fresh"
+            disabled={loading} // Deshabilita si está cargando
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -134,29 +114,73 @@ function SearchPage() {
           </button>
         </form>
 
+        {/* RESULTADOS */}
         <div className="box2 search-results-panel">
-            <h3>Recientes</h3>
+          {/* Título dinámico */}
+          <h3>
+            {hasSearched
+              ? `Resultados para: "${searchTerm}"`
+              : "Ingresa un término para buscar 🚀"}
+          </h3>
+
+          {loading ? (
+            <p style={{ textAlign: "center", color: "#ccc", padding: "20px" }}>
+              Buscando...
+            </p>
+          ) : (
             <div className="search-grid-wrapper">
+              {embeds.length > 0 ? (
                 <div className="search-grid">
-                    {embeds.map((it) => (
-                     
-                      <Link 
-                          //key={it.id} 
-                          to={`/Ranking`}  //${it.id}
-                          className="pf-card-link"
-                        >
-                        <article className="pf-card"> 
-                          <header className="pf-card-title">{it.title}</header>
-                          <div className="pf-metrics">
-                            <span><img src={star2} alt="Estrella vacía" /> {it.likes}</span>
-                            <span>💬 {it.comments}</span>
-                          </div>
-                        </article>
-                      </Link>
-                    ))}
+                  {embeds.map((it) => (
+                    <Link
+                      key={it.id}
+                      to={`/Ranking/${it.id}`} // Enlace al detalle real
+                      className="pf-card-link"
+                    >
+                      <article className="pf-card">
+                        <header className="pf-card-title">
+                          {it.titulo}
+                          {/* Agregué el autor aquí abajo pequeño */}
+                          <span
+                            style={{
+                              display: "block",
+                              fontSize: "0.8rem",
+                              fontWeight: "normal",
+                              color: "#ccc",
+                              marginTop: "4px",
+                            }}
+                          >
+                            {it.autor}
+                          </span>
+                        </header>
+                        <div className="pf-metrics">
+                          {/* Usamos las propiedades que vienen del SP de MySQL */}
+                          <span>
+                            <img src={star2} alt="Likes" /> {it.total_likes}
+                          </span>
+                          <span>💬 {it.total_comentarios}</span>
+                        </div>
+                      </article>
+                    </Link>
+                  ))}
                 </div>
+              ) : (
+                // Mensaje si buscó pero no encontró nada
+                hasSearched && (
+                  <p
+                    style={{
+                      textAlign: "center",
+                      color: "#aaa",
+                      marginTop: "20px",
+                    }}
+                  >
+                    No se encontraron resultados. Intenta con otra palabra.
+                  </p>
+                )
+              )}
             </div>
-          </div>
+          )}
+        </div>
       </main>
     </div>
   );

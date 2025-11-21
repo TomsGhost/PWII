@@ -3,37 +3,48 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import Navbar from "../Componentes/Navbar";
 import EmbedDetails from "../Componentes/EmbedDetails";
 import "./styleRanking.css";
-import mercyImg from "../assets/Mercy2.png";
 import Swal from "sweetalert2";
 
 function RankingPage() {
-  const { id } = useParams(); // Se mantiene 'id' como en tu código original
-  const [post, setPost] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  // Recuperamos el ID del usuario con la clave que usas en tu login: "id"
+  const { id } = useParams();
+  const navigate = useNavigate();
+  
+  // Recuperamos el ID del usuario
   const userId = localStorage.getItem("id");
 
+  // --- ESTADOS ---
+  const [post, setPost] = useState(null);
+  const [loading, setLoading] = useState(true);
+  
+  // Estado para comentarios del post actual
   const [comentarios, setComentarios] = useState([]);
   const [nuevoComentario, setNuevoComentario] = useState("");
   const [errors, setErrors] = useState({});
 
+  // Estados de interacción
   const [isLiked, setIsLiked] = useState(false);
-  const [isFavorite, setIsFavorite] = useState(false); // Estado para el botón de favorito
-  
-  const navigate = useNavigate();
+  const [isFavorite, setIsFavorite] = useState(false);
 
-  // Mocks de Prueba
-  const [canciones] = useState([
-    { rank: 1, titulo: "Evil", artista: "Interpol", imagen: mercyImg },
-    { rank: 2, titulo: "Obstacle 1", artista: "Interpol", imagen: mercyImg },
-    { rank: 3, titulo: "Rest My Chemistry", artista: "Interpol", imagen: mercyImg },
-    { rank: 4, titulo: "Slow Hands", artista: "Interpol", imagen: mercyImg },
-    { rank: 5, titulo: "The Rover", artista: "Interpol", imagen: mercyImg },
-    { rank: 6, titulo: "Cmere", artista: "Interpol", imagen: mercyImg },
-    { rank: 7, titulo: "Untitled", artista: "Interpol", imagen: mercyImg },
-  ]);
+  // NUEVO: Estado para la lista lateral (Top Comentados)
+  const [topCommented, setTopCommented] = useState([]);
 
+  // 1. FETCH PARA LA LISTA LATERAL (TOP COMENTADOS)
+  useEffect(() => {
+    const fetchTopCommented = async () => {
+      try {
+        const response = await fetch("http://localhost:3001/getTopCommented");
+        if (response.ok) {
+          const data = await response.json();
+          setTopCommented(data);
+        }
+      } catch (error) {
+        console.error("Error fetching top commented:", error);
+      }
+    };
+    fetchTopCommented();
+  }, []);
+
+  // 2. FETCH DE COMENTARIOS DEL POST ACTUAL
   const fetchComments = useCallback(async () => {
     try {
       const response = await fetch(
@@ -49,6 +60,7 @@ function RankingPage() {
     }
   }, [id]);
 
+  // 3. FETCH DEL POST ACTUAL Y SUS DATOS
   useEffect(() => {
     const fetchPostAndComments = async () => {
       try {
@@ -83,6 +95,7 @@ function RankingPage() {
     fetchPostAndComments();
   }, [id, fetchComments]);
 
+  // --- MANEJO DE NUEVO COMENTARIO ---
   const handleCommentSubmit = async (e) => {
     e.preventDefault();
     let newErrors = {};
@@ -151,6 +164,7 @@ function RankingPage() {
     }
   };
 
+  // --- MANEJO DE LIKES ---
   const handleLikeToggle = async () => {
     if (!userId) {
       Swal.fire("Error", "Debe iniciar sesión para dar Me Gusta.", "error");
@@ -186,7 +200,7 @@ function RankingPage() {
     }
   };
 
-  // --- LÓGICA DE NAVEGACIÓN PARA FAVORITOS (ESTA ES LA QUE FUNCIONA) ---
+  // --- NAVEGACIÓN A FAVORITOS ---
   const handleFavoriteNavigation = () => {
     if (!userId) {
       Swal.fire("Error", "Debe iniciar sesión para guardar favoritos.", "error");
@@ -195,12 +209,11 @@ function RankingPage() {
 
     navigate("/favorite-embed", {
       state: {
-        postId: id,      // Usamos la variable 'id' del useParams
-        userId: userId,  // Usamos la variable 'userId' del localStorage
+        postId: id,
+        userId: userId,
       }
     });
   };
-  // --------------------------------------------------------------------
 
   return (
     <div className="page-container">
@@ -212,15 +225,41 @@ function RankingPage() {
         <div className="color"></div>
         <div className="color"></div>
 
+        {/* IZQUIERDA: LISTA TOP COMENTADOS */}
         <div className="box column-left">
-          <h3>Mas Populares</h3>
-          {canciones.map((cancion) => (
-            <Link to={`/Ranking`} key={cancion.rank}>
-              <div className="list">{/* Contenido de la lista */}</div>
-            </Link>
-          ))}
+          <h3>Más Debatidos</h3>
+          {topCommented.length > 0 ? (
+            topCommented.map((item, index) => (
+              <Link to={`/Ranking/${item.id}`} key={item.id}>
+                <div className="list" style={{ display: 'flex', alignItems: 'center', padding: '10px', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                  {/* Número de Ranking */}
+                  <div style={{ 
+                      fontSize: '1.5rem', 
+                      fontWeight: 'bold', 
+                      marginRight: '15px', 
+                      color: '#fff' 
+                  }}>
+                    #{index + 1}
+                  </div>
+                  
+                  {/* Info del Post */}
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                     <span style={{ fontWeight: 'bold', color: '#fff' }}>
+                       {item.titulo}
+                     </span>
+                     <span style={{ fontSize: '0.8rem', color: '#ccc' }}>
+                       💬 {item.total_comentarios} comentarios
+                     </span>
+                  </div>
+                </div>
+              </Link>
+            ))
+          ) : (
+            <p style={{ padding: '20px', color: '#ccc' }}>Cargando top...</p>
+          )}
         </div>
 
+        {/* DERECHA: DETALLE DEL POST */}
         <div className="column-right">
           {loading ? (
             <p>Cargando publicación...</p>
@@ -228,16 +267,12 @@ function RankingPage() {
             <EmbedDetails
               songTitle={post.titulo}
               authorName={post.nombre_autor}
-              
-              // 👇 CORREGIDO: Restaurado a id_autor (como devuelve tu SP)
               authorId={post.id_autor} 
-              
               authorInfo={post.descripcion}
               likes={post.total_me_gusta}
               commentsCount={comentarios.length}
               embedCode={post.texto}
               
-              // Props para Favoritos
               isFavorite={isFavorite} 
               onToggleFavorite={handleFavoriteNavigation} 
 
@@ -248,31 +283,37 @@ function RankingPage() {
             <p>La publicación no fue encontrada.</p>
           )}
 
+          {/* CAJA DE COMENTARIOS */}
           <div className="box2 box-comments">
             <h3>Comentarios</h3>
             <div className="comment-section">
-              {comentarios.map((comentario) => (
-                <Link
-                  to={`/perfil/${comentario.id_usuario}`}
-                  key={comentario.id}
-                >
-                  <div className="list comment-item">
-                    <div className="imgBx comment-img">
-                      <img
-                        src={`https://ui-avatars.com/api/?name=${comentario.nombre_usuario}&background=random&color=fff`}
-                        alt={`Foto de ${comentario.nombre_usuario}`}
-                      />
+              {comentarios.length > 0 ? (
+                 comentarios.map((comentario) => (
+                  <Link
+                    to={`/perfil/${comentario.id_usuario}`}
+                    key={comentario.id}
+                  >
+                    <div className="list comment-item">
+                      <div className="imgBx comment-img">
+                        <img
+                          src={`https://ui-avatars.com/api/?name=${comentario.nombre_usuario}&background=random&color=fff`}
+                          alt={`Avatar de ${comentario.nombre_usuario}`}
+                        />
+                      </div>
+                      <div className="content">
+                        <h4 className="comment-author">
+                          {comentario.nombre_usuario}
+                        </h4>
+                        <p>{comentario.comentario}</p>
+                      </div>
                     </div>
-                    <div className="content">
-                      <h4 className="comment-author">
-                        {comentario.nombre_usuario}
-                      </h4>
-                      <p>{comentario.comentario}</p>
-                    </div>
-                  </div>
-                </Link>
-              ))}
+                  </Link>
+                ))
+              ) : (
+                <p style={{padding: '20px', textAlign: 'center', color: '#aaa'}}>Sé el primero en comentar.</p>
+              )}
             </div>
+            
             <form onSubmit={handleCommentSubmit} className="comment-form">
               <h3>Agregar Comentario</h3>
               <textarea

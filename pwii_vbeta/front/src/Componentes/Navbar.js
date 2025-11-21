@@ -9,7 +9,7 @@ function Navbar() {
 
   return (
         <header style={{width: '100vw'}}>
-      <Link to="/ranking" className="logo">Embed</Link>
+      <Link to="/HomePage" className="logo">Embed</Link>
       <ul>
         <li><Link to="/HomePage">Inicio</Link></li>
         <li><Link to="/Searchpage">Buscar</Link></li>
