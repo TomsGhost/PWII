@@ -1,18 +1,43 @@
-import React, { useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useMemo, useState, useEffect } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import Navbar from '../Componentes/Navbar';
 import "./editEmbed.css";
 import Swal from "sweetalert2";
+import axios from "axios";
 
 export default function EditEmbed() {
-  const [title, setTitle] = useState("Girl in Red");
-  const [desc, setDesc] = useState("slay grrrrrrrrrl!!");
-  const [url, setUrl] = useState("https://open.spotify.com/embed/track/04OSnqlwlBJMvidYccraVz?utm_source=generator");
+  const [title, setTitle] = useState("");
+  const [desc, setDesc] = useState("");
+  const [url, setUrl] = useState("");
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
+  const { id } = useParams();
+
+  useEffect(() => {
+    const fetchPost = async () => {
+      try {
+        const response = await axios.get(`http://localhost:3001/getPostById/${id}`);
+        const postData = response.data[0][0];
+        if (postData) {
+          setTitle(postData.titulo);
+          setDesc(postData.descripcion);
+          setUrl(postData.embed || "");
+        } else {
+          Swal.fire("Error", "No se pudo encontrar la publicación.", "error");
+          navigate("/");
+        }
+      } catch (error) {
+        console.error("Error fetching post data:", error);
+        Swal.fire("Error", "No se pudieron cargar los datos de la publicación.", "error");
+        navigate("/");
+      }
+    };
+
+    fetchPost();
+  }, [id, navigate]);
 
   const iframeSrc = useMemo(() => {
-    const u = url.trim();
+    const u = (url || "").trim();
 
     if (/spotify\.com/.test(u)) {
       if (/\/embed\//.test(u)) return u;
@@ -49,51 +74,47 @@ export default function EditEmbed() {
     return "";
   }, [url]);
 
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
-    // TODO: aquí conectas a tu API para actualizar el embed
     let newErrors = {};
 
-    const titleRegex = /^[^"]*$/; // sin caracteres que puedan romper el código
-    const UrlRegex1 = /^https?:\/\/\S*embed\S*$/i; // url solamente + palabra 'embed'
-    const UrlRegex2 =
-      /<(iframe|script)[\s\S]*src=["']https?:\/\/\S*embed\S*["'][\s\S]*>[\s\S]*<\/\1>/i; // etiquetas posibles + url + palabra 'embed'
+    const titleRegex = /^[^"]*$/;
+    const UrlRegex1 = /^https?:\/\/\S*embed\S*$/i;
+    const UrlRegex2 = /<iframe[\s\S]*src=["']https?:\/\/\S*embed\S*["'][\s\S]*>[\s\S]*<\/iframe>/i;
 
-    if (!title.trim()) {
-      newErrors.title = "El título es obligatorio.";
-    } else if (title.length > 149) {
-      newErrors.title = "No debe superar los 149 caracteres.";
-    } else if (!titleRegex.test(title)) {
-      newErrors.title = "El titulo no puede contener comillas dobles";
-    }
+    if (!title.trim()) newErrors.title = "El título es obligatorio.";
+    else if (title.length > 149) newErrors.title = "No debe superar los 149 caracteres.";
+    else if (!titleRegex.test(title)) newErrors.title = "El titulo no puede contener comillas dobles";
 
-    if (!desc.trim()) {
-      newErrors.desc = "La descripción es obligatoria.";
-    } else if (desc.length > 254) {
-      newErrors.desc = "No debe superar los 254 caracteres.";
-    }
+    if (!desc.trim()) newErrors.desc = "La descripción es obligatoria.";
+    else if (desc.length > 254) newErrors.desc = "No debe superar los 254 caracteres.";
 
-    if (!url.trim()) {
-      newErrors.url = "La URL del embed es obligatoria.";
-    } else if (url.length > 64000) {
-      newErrors.url = "El embed es demasiado largo para ser guardado.";
-    } else if (!UrlRegex1.test(url) && !UrlRegex2.test(url)) {
-      newErrors.url =
-        "El embed ingresado no es válido. Intenta con otro formato.";
-    }
+    if (!url.trim()) newErrors.url = "La URL del embed es obligatoria.";
+    else if (url.length > 64000) newErrors.url = "El embed es demasiado largo para ser guardado.";
+    else if (!UrlRegex1.test(url) && !UrlRegex2.test(url)) newErrors.url = "El embed ingresado no es válido. Intenta con otro formato.";
 
     setErrors(newErrors);
+
     if (Object.keys(newErrors).length > 0) {
-      Swal.fire({
-        title: "Error",
-        text: "No es posible crear el embed, revise los datos",
-        icon: "error",
-      });
+      Swal.fire("Error", "No es posible actualizar el embed, revise los datos", "error");
       return;
     }
 
-    console.log("Crear embed:", { title, desc, url });
-    navigate(-1);
+    try {
+      const response = await axios.put(`http://localhost:3001/updatePost/${id}`, {
+        title: title,
+        desc: desc,
+        embed: url,
+      });
+
+      if (response.status === 200) {
+        Swal.fire("¡Éxito!", "Publicación actualizada correctamente.", "success");
+        navigate(-1);
+      }
+    } catch (error) {
+      console.error("Error updating post:", error);
+      Swal.fire("Error", "No se pudo actualizar la publicación.", "error");
+    }
   };
 
   return (

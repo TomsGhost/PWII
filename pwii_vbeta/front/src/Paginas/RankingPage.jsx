@@ -131,8 +131,9 @@ function RankingPage() {
           ) : post ? (
             <EmbedDetails 
               songTitle={post.titulo} 
-              authorInfo={post.descripcion}
               authorName={post.nombre_autor}
+              authorId={post.id_autor}
+              authorInfo={post.descripcion}
               likes={post.total_me_gusta}
               commentsCount={post.total_comentarios}
               embedCode={post.texto}

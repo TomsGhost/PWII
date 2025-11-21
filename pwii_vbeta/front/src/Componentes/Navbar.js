@@ -13,7 +13,7 @@ function Navbar() {
       <ul>
         <li><Link to="/HomePage">Inicio</Link></li>
         <li><Link to="/Searchpage">Buscar</Link></li>
-        <li><Link to="/perfil">Perfil</Link></li>
+        <li><Link to={`/perfil/${localStorage.getItem("id")}`}>Perfil</Link></li>
         <li><Link to="/create-embed">Subir</Link></li>
         <li><Link to="/" onClick={handleLogout}>Cerrar sesión</Link></li>
       </ul>

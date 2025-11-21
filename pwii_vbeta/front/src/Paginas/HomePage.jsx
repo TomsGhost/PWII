@@ -149,8 +149,8 @@ function HomePage() {
             <div className="recientes-grid">
               {embeds.map((it) => (
                 <Link
-                  key={it.idPublicacion}
-                  to={`/Ranking/${it.idPublicacion}`}
+                  key={it.id}
+                  to={`/Ranking/${it.id}`}
                   className="pf-card-link"
                 >
                   <article className="pf-card">
@@ -159,7 +159,7 @@ function HomePage() {
                       <span>
                         <img src={star2} alt="Estrella vacía" /> {it.likes}
                       </span>
-                      <span>💬 {it.comentarios}</span>
+                      <span>💬 {it.comments}</span>
                     </div>
                   </article>
                 </Link>

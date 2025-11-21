@@ -27,10 +27,10 @@ function App() {
         <Route path="/SearchPage" element={<SearchPage />} /> //
         <Route path="/Ranking/:id" element={<RankingPage />} /> //
         
-        <Route path="/perfil" element={<Perfil />} />  
+        <Route path="/perfil/:id" element={<Perfil />} />  
         <Route path="/profileEdit" element={<EditProfile />} /> //
         <Route path="/deleteProfile" element={<DeleteProfile />} />
-        <Route path="/edit-embed" element={<EditEmbed />} /> //
+        <Route path="/edit-embed/:id" element={<EditEmbed />} /> //
         <Route path="/create-embed" element={<CreateEmbed />} /> //
         <Route path="/favorite-embed" element={<FavoriteEmbed />} /> //
 
