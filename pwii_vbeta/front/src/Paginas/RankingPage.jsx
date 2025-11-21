@@ -1,53 +1,51 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { useParams } from 'react-router-dom';
-import Navbar from '../Componentes/Navbar';
-import EmbedDetails from '../Componentes/EmbedDetails';
-import './styleRanking.css';
-import mercyImg from '../assets/Mercy2.png';
-import star1 from '../assets/Star 1.png';
-import star2 from '../assets/Star 2(1).png';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from "react";
+import { useParams, useNavigate, Link } from "react-router-dom";
+import Navbar from "../Componentes/Navbar";
+import EmbedDetails from "../Componentes/EmbedDetails";
+import "./styleRanking.css";
+import mercyImg from "../assets/Mercy2.png";
 import Swal from "sweetalert2";
 
 function RankingPage() {
-  const { id } = useParams(); // Obtener el ID de la URL
+  const { id } = useParams(); // Se mantiene 'id' como en tu código original
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  //Mocks de Prueba
-  const [canciones] = useState([
-    { rank: 1, titulo: 'Evil', artista: 'Interpol', imagen: mercyImg },
-    { rank: 2, titulo: 'Obstacle 1', artista: 'Interpol', imagen: mercyImg },
-    { rank: 3, titulo: 'Rest My Chemistry', artista: 'Interpol', imagen: mercyImg },
-    { rank: 4, titulo: 'Slow Hands', artista: 'Interpol', imagen: mercyImg },
-    { rank: 5, titulo: 'The Rover', artista: 'Interpol', imagen: mercyImg },
-    { rank: 6, titulo: 'Cmere', artista: 'Interpol', imagen: mercyImg },
-    { rank: 7, titulo: 'Untitled', artista: 'Interpol', imagen: mercyImg },
-  ]);
+  // Recuperamos el ID del usuario con la clave que usas en tu login: "id"
+  const userId = localStorage.getItem("id");
 
-  const [comentarios, setComentarios] = useState([]); // Initialize as empty array
-  const [nuevoComentario, setNuevoComentario] = useState('');
+  const [comentarios, setComentarios] = useState([]);
+  const [nuevoComentario, setNuevoComentario] = useState("");
   const [errors, setErrors] = useState({});
 
-  const [isFavorite, setIsFavorite] = useState(false); 
   const [isLiked, setIsLiked] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false); // Estado para el botón de favorito
+  
+  const navigate = useNavigate();
 
-  // Function to fetch comments
+  // Mocks de Prueba
+  const [canciones] = useState([
+    { rank: 1, titulo: "Evil", artista: "Interpol", imagen: mercyImg },
+    { rank: 2, titulo: "Obstacle 1", artista: "Interpol", imagen: mercyImg },
+    { rank: 3, titulo: "Rest My Chemistry", artista: "Interpol", imagen: mercyImg },
+    { rank: 4, titulo: "Slow Hands", artista: "Interpol", imagen: mercyImg },
+    { rank: 5, titulo: "The Rover", artista: "Interpol", imagen: mercyImg },
+    { rank: 6, titulo: "Cmere", artista: "Interpol", imagen: mercyImg },
+    { rank: 7, titulo: "Untitled", artista: "Interpol", imagen: mercyImg },
+  ]);
+
   const fetchComments = useCallback(async () => {
     try {
-      const response = await fetch(`http://localhost:3001/getCommentsByPostId/${id}`);
+      const response = await fetch(
+        `http://localhost:3001/getCommentsByPostId/${id}`
+      );
       if (!response.ok) {
-        throw new Error('Error al obtener los comentarios');
+        throw new Error("Error al obtener los comentarios");
       }
       const data = await response.json();
       setComentarios(data);
     } catch (error) {
       console.error("Error fetching comments:", error);
-      Swal.fire({
-        title: "Error",
-        text: "No se pudieron cargar los comentarios.",
-        icon: "error",
-      });
     }
   }, [id]);
 
@@ -55,9 +53,12 @@ function RankingPage() {
     const fetchPostAndComments = async () => {
       try {
         setLoading(true);
-        const postResponse = await fetch(`http://localhost:3001/getPostById/${id}`);
+
+        const postResponse = await fetch(
+          `http://localhost:3001/getPostById/${id}`
+        );
         if (!postResponse.ok) {
-          throw new Error('Error al obtener los datos de la publicación');
+          throw new Error("Error al obtener los datos de la publicación");
         }
         const postData = await postResponse.json();
         if (postData && postData[0] && postData[0][0]) {
@@ -65,8 +66,8 @@ function RankingPage() {
         } else {
           setPost(null);
         }
-        
-        await fetchComments(); // Fetch comments after post is loaded
+
+        await fetchComments();
       } catch (error) {
         console.error(error);
         Swal.fire({
@@ -85,8 +86,6 @@ function RankingPage() {
   const handleCommentSubmit = async (e) => {
     e.preventDefault();
     let newErrors = {};
-
-    const userId = localStorage.getItem('userId'); // Assuming userId is stored in localStorage
 
     if (!userId) {
       Swal.fire({
@@ -114,18 +113,10 @@ function RankingPage() {
       return;
     }
 
-    console.log("Datos del comentario a enviar:", {
-      id_usuario: userId,
-      id_publicacion: id,
-      texto_comentario: nuevoComentario,
-    });
-    
     try {
       const response = await fetch("http://localhost:3001/createComment", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           id_usuario: userId,
           id_publicacion: id,
@@ -133,9 +124,7 @@ function RankingPage() {
         }),
       });
 
-      console.log("Respuesta del servidor (status):", response.status);
       const data = await response.json();
-      console.log("Respuesta del servidor (data):", data);
 
       if (response.ok) {
         Swal.fire({
@@ -143,8 +132,8 @@ function RankingPage() {
           text: data.msg,
           icon: "success",
         });
-        setNuevoComentario('');
-        fetchComments(); // Refresh comments after successful submission
+        setNuevoComentario("");
+        fetchComments();
       } else {
         Swal.fire({
           title: "Error",
@@ -162,6 +151,57 @@ function RankingPage() {
     }
   };
 
+  const handleLikeToggle = async () => {
+    if (!userId) {
+      Swal.fire("Error", "Debe iniciar sesión para dar Me Gusta.", "error");
+      return;
+    }
+
+    const endpoint = isLiked
+      ? "http://localhost:3001/removeLike"
+      : "http://localhost:3001/addLike";
+
+    try {
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id_usuario: userId,
+          id_publicacion: post.id,
+        }),
+      });
+
+      if (response.ok) {
+        setIsLiked((prev) => !prev);
+      } else {
+        const data = await response.json();
+        Swal.fire(
+          "Error",
+          data.msg || "Error al cambiar el estado de Me Gusta.",
+          "error"
+        );
+      }
+    } catch (error) {
+      Swal.fire("Error", "Error de red al procesar el Me Gusta.", "error");
+    }
+  };
+
+  // --- LÓGICA DE NAVEGACIÓN PARA FAVORITOS (ESTA ES LA QUE FUNCIONA) ---
+  const handleFavoriteNavigation = () => {
+    if (!userId) {
+      Swal.fire("Error", "Debe iniciar sesión para guardar favoritos.", "error");
+      return;
+    }
+
+    navigate("/favorite-embed", {
+      state: {
+        postId: id,      // Usamos la variable 'id' del useParams
+        userId: userId,  // Usamos la variable 'userId' del localStorage
+      }
+    });
+  };
+  // --------------------------------------------------------------------
+
   return (
     <div className="page-container">
       <div className="navbar-container">
@@ -176,18 +216,8 @@ function RankingPage() {
           <h3>Mas Populares</h3>
           {canciones.map((cancion) => (
             <Link to={`/Ranking`} key={cancion.rank}>
-                <div className="list">
-                  <div className="imgBx">
-                  <img src={cancion.imagen} alt={`Portada de ${cancion.titulo}`} />
-                </div>
-                <div className="content">
-                  <h2 className="rank"><small>#</small>{cancion.rank}</h2>
-                  <h4>{cancion.titulo}</h4>
-                  <p>{cancion.artista}</p>
-                </div>
-              </div>
+              <div className="list">{/* Contenido de la lista */}</div>
             </Link>
-            
           ))}
         </div>
 
@@ -195,18 +225,24 @@ function RankingPage() {
           {loading ? (
             <p>Cargando publicación...</p>
           ) : post ? (
-            <EmbedDetails 
-              songTitle={post.titulo} 
-              authorName={post.nombre_usuario}
-              authorId={post.id_usuario}
+            <EmbedDetails
+              songTitle={post.titulo}
+              authorName={post.nombre_autor}
+              
+              // 👇 CORREGIDO: Restaurado a id_autor (como devuelve tu SP)
+              authorId={post.id_autor} 
+              
               authorInfo={post.descripcion}
               likes={post.total_me_gusta}
               commentsCount={comentarios.length}
               embedCode={post.texto}
-              isFavorite={isFavorite}
-              onToggleFavorite={() => setIsFavorite(prev => !prev)}
+              
+              // Props para Favoritos
+              isFavorite={isFavorite} 
+              onToggleFavorite={handleFavoriteNavigation} 
+
               isLiked={isLiked}
-              onToggleLike={() => setIsLiked(prev => !prev)}
+              onToggleLike={handleLikeToggle}
             />
           ) : (
             <p>La publicación no fue encontrada.</p>
@@ -216,20 +252,25 @@ function RankingPage() {
             <h3>Comentarios</h3>
             <div className="comment-section">
               {comentarios.map((comentario) => (
-                <Link  to={`/perfil/${comentario.id_usuario}`} key={comentario.id}> // Link to user profile
+                <Link
+                  to={`/perfil/${comentario.id_usuario}`}
+                  key={comentario.id}
+                >
                   <div className="list comment-item">
                     <div className="imgBx comment-img">
-                      {/* Placeholder for profile pic, as it's not returned by SP_ObtenerComentariosPorPublicacion */}
-                      <img src={`https://ui-avatars.com/api/?name=${comentario.nombre_usuario}&background=random&color=fff`} alt={`Foto de ${comentario.nombre_usuario}`} />
+                      <img
+                        src={`https://ui-avatars.com/api/?name=${comentario.nombre_usuario}&background=random&color=fff`}
+                        alt={`Foto de ${comentario.nombre_usuario}`}
+                      />
                     </div>
                     <div className="content">
-                      <h4 className="comment-author">{comentario.nombre_usuario}</h4>
+                      <h4 className="comment-author">
+                        {comentario.nombre_usuario}
+                      </h4>
                       <p>{comentario.comentario}</p>
-                      <small>{new Date(comentario.fecha_creacion).toLocaleString()}</small>
                     </div>
                   </div>
                 </Link>
-               
               ))}
             </div>
             <form onSubmit={handleCommentSubmit} className="comment-form">
@@ -238,11 +279,14 @@ function RankingPage() {
                 placeholder="Escribe tu comentario aquí..."
                 value={nuevoComentario}
                 onChange={(e) => {
-                  setNuevoComentario(e.target.value)
-                  if(errors.comentario) setErrors({...errors, comentario: null})
+                  setNuevoComentario(e.target.value);
+                  if (errors.comentario)
+                    setErrors({ ...errors, comentario: null });
                 }}
               />
-              {errors.comentario && <p style={{ color: 'red' }}>{errors.comentario}</p>}
+              {errors.comentario && (
+                <p style={{ color: "red" }}>{errors.comentario}</p>
+              )}
               <button type="submit">Publicar</button>
             </form>
           </div>

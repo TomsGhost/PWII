@@ -9,29 +9,25 @@ import Navbar from '../Componentes/Navbar';
 export default function Perfil() {
   const { id } = useParams();
   const loggedInUserIdFromLocalStorage = localStorage.getItem("id");
-  console.log("Logged In User ID from localStorage:", loggedInUserIdFromLocalStorage);
+  
   const [perfilData, setPerfilData] = useState(null);
   const [loading, setLoading] = useState(true);
-
   const [embeds, setEmbeds] = useState([]);
+  
+  // 1. ESTADO PARA FAVORITOS
+  const [favoritos, setFavoritos] = useState([]);
 
-  // Modal de eliminación
   const [isFollowing, setIsFollowing] = useState(false);
   const [toDeleteId, setToDeleteId] = useState(null);
-  
 
+  // Fetch Datos Usuario
   useEffect(() => {
     const fetchUserData = async () => {
       try {
         setLoading(true);
-        console.log("Fetching user data for ID:", id); // Debug: Log ID
         const response = await axios.post("http://localhost:3001/getUserData", { id });
-        console.log("API Response (getUserData):", response.data); // Debug: Log full response
         if (response.data && response.data.msg && response.data.msg[0]) {
           setPerfilData(response.data.msg[0][0]);
-          console.log("PerfilData set to:", response.data.msg[0][0]); // Debug: Log parsed data
-        } else {
-          console.log("Unexpected API response structure or empty data.");
         }
       } catch (error) {
         console.error("Error fetching user data:", error);
@@ -39,12 +35,10 @@ export default function Perfil() {
         setLoading(false);
       }
     };
-
-    if (id) {
-      fetchUserData();
-    }
+    if (id) fetchUserData();
   }, [id]);
 
+  // Fetch Publicaciones
   useEffect(() => {
     const fetchPostsData = async () => {
       try {
@@ -56,20 +50,30 @@ export default function Perfil() {
         console.error("Error fetching posts data:", error);
       }
     };
-
-    if (id) {
-      fetchPostsData();
-    }
+    if (id) fetchPostsData();
   }, [id]);
 
+  // 2. FETCH FAVORITOS (Lógica Backend)
+  useEffect(() => {
+    const fetchFavorites = async () => {
+      try {
+        const response = await axios.get(`http://localhost:3001/favorites/${id}`);
+        if (response.data) {
+          setFavoritos(response.data);
+        }
+      } catch (error) {
+        console.error("Error fetching favorites:", error);
+      }
+    };
+    if (id) fetchFavorites();
+  }, [id]);
+
+  // Fetch Seguimiento
   useEffect(() => {
     const checkFollowingStatus = async () => {
       const seguidorId = localStorage.getItem("id");
       const seguidoId = id;
-
-      if (!seguidorId || !seguidoId) {
-        return;
-      }
+      if (!seguidorId || !seguidoId) return;
 
       try {
         const response = await axios.get("http://localhost:3001/verificar-seguimiento", {
@@ -82,20 +86,13 @@ export default function Perfil() {
         console.error("Error checking following status:", error);
       }
     };
-
-    if (id) {
-      checkFollowingStatus();
-    }
+    if (id) checkFollowingStatus();
   }, [id]);
 
   const handleFollowToggle = async () => {
     const seguidorId = localStorage.getItem("id");
     const seguidoId = id;
-
-    if (!seguidorId || !seguidoId) {
-      console.error("No se pudo obtener el ID del seguidor o seguido.");
-      return;
-    }
+    if (!seguidorId || !seguidoId) return;
 
     const url = isFollowing ? "http://localhost:3001/unfollow" : "http://localhost:3001/follow";
 
@@ -107,23 +104,14 @@ export default function Perfil() {
     }
   };
 
-  const openDeleteModal = (id) => {
-    setToDeleteId(id);
-  };
-
-  const closeDeleteModal = () => {
-    setToDeleteId(null);
-  };
+  const openDeleteModal = (id) => setToDeleteId(id);
+  const closeDeleteModal = () => setToDeleteId(null);
 
   const confirmDelete = async () => {
     if (toDeleteId) {
       try {
         const loggedInUserId = localStorage.getItem("id");
-        if (!loggedInUserId) {
-          console.error("No se pudo obtener el ID del usuario logueado.");
-          // podrías mostrar un mensaje al usuario
-          return;
-        }
+        if (!loggedInUserId) return;
 
         await axios.put(`http://localhost:3001/deletePost/${toDeleteId}`, {
           id_usuario_autor: loggedInUserId,
@@ -133,28 +121,21 @@ export default function Perfil() {
           prevEmbeds.filter((embed) => embed.id !== toDeleteId)
         );
       } catch (error) {
-        console.error("Error al eliminar la publicación:", error.response?.data?.msg || error.message);
-        // Opcionalmente, mostrar un mensaje de error al usuario
+        console.error("Error al eliminar:", error);
       } finally {
         closeDeleteModal();
       }
     }
   };
 
-  if (loading) {
-    return <div>Cargando perfil...</div>;
-  }
-
-  if (!perfilData) {
-    return <div>No se encontraron datos del perfil.</div>;
-  }
+  if (loading) return <div>Cargando perfil...</div>;
+  if (!perfilData) return <div>No se encontraron datos del perfil.</div>;
 
   const loggedInUserId = localStorage.getItem("id");
 
   return (
     <section className="pf-section">
       <Navbar />
-      {/* Shell 2 columnas */}
       <div className="pf-shell">
         {/* Izquierda */}
         <aside className="pf-left">
@@ -204,36 +185,47 @@ export default function Perfil() {
             </ul>
           </div>
 
+          {/* 3. AQUÍ VA LA LÓGICA DE FAVORITOS SIN ROMPER ESTILOS */}
           <div className="pf-mini">
-            <SpotifyPlayer />
+            {favoritos.length > 0 ? (
+              favoritos.map((fav) => (
+                <div key={fav.favorito_id} className="pf-mini-item">
+                  {/* Player del embed */}
+                  <SpotifyPlayer embedUrl={fav.embed_code} height="80" />
+                  
+                  {/* Título y Nota (Renderizado simple) */}
+                  <div className="pf-mini-content">
+                    <p className="pf-fav-note">{fav.nota_favorito}</p>
+                  </div>
+                </div>
+              ))
+            ) : (
+              // Si no hay favoritos, mostramos uno vacío o el player por defecto como tenías
+              <SpotifyPlayer />
+            )}
           </div>
         </aside>
 
         {/* Derecha */}
         <main className="pf-right">
           <div className="pf-recent-title">Recientes</div>
-
           <div className="pf-grid">
             {embeds.map((it) => (
-
              <ProfileEmbedCard
                 key={it.id}
                 id={it.id}
                 title={it.titulo}
                 likes={it.total_me_gusta}
                 comments={it.total_comentarios}
-                // Pasamos la función del componente padre al hijo
                 openDeleteModal={openDeleteModal}
                 isOwner={loggedInUserId === id}
               />
-            
             ))}
           </div>
         </main>
       </div>
-      
 
-      {/* MODAL: confirmar eliminación de embed */}
+      {/* MODAL */}
       {toDeleteId !== null && (
         <div className="pf-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="pf-modal-title">
           <div className="pf-modal">

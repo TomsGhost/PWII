@@ -7,7 +7,7 @@ import "./styleHome.css";
 import star1 from "../assets/Star 1.png";
 import star2 from "../assets/Star 2(1).png";
 
-// Recientes
+// Recientes (Este componente es visual, lo dejamos igual)
 const RecienteCard = ({ title, author }) => (
   <Link to="/ranking" className="reciente-card-link">
     <div className="reciente-card">
@@ -27,12 +27,20 @@ const RecienteCard = ({ title, author }) => (
 function HomePage() {
   const navigate = useNavigate();
   const location = useLocation();
+  
+  // Estado para datos del usuario logueado
   const [datos, setDatos] = useState(location.state?.datos);
+  
+  // NUEVO: Estado para la lista de seguidos y embeds
+  const [followingList, setFollowingList] = useState([]); 
+  const [embeds, setEmbeds] = useState([]);
 
+  // 1. Fetch Datos del Usuario Logueado
   useEffect(() => {
     const fetchUserData = async () => {
       const id = localStorage.getItem("id");
-      console.log(id);
+      console.log("ID Usuario:", id);
+      
       if (!datos && id) {
         try {
           const userDataPayload = { id };
@@ -52,14 +60,31 @@ function HomePage() {
           });
         }
       } else if (id === null) {
-        navigate(-1);
+        navigate("/"); // Si no hay ID, regresa al login (ajusté -1 a / por seguridad)
       }
     };
     fetchUserData();
-  }, [datos]);
+  }, [datos, navigate]);
 
-  const [embeds, setEmbeds] = useState([]);
+  // 2. NUEVO: Fetch de la lista "Siguiendo"
+  useEffect(() => {
+    const fetchFollowing = async () => {
+      const id = localStorage.getItem("id");
+      if (id) {
+        try {
+          const response = await axios.get(`http://localhost:3001/getFollowing/${id}`);
+          if (response.data) {
+            setFollowingList(response.data);
+          }
+        } catch (error) {
+          console.error("Error obteniendo seguidos:", error);
+        }
+      }
+    };
+    fetchFollowing();
+  }, []);
 
+  // 3. Fetch de Publicaciones (Feed/Recientes)
   useEffect(() => {
     const fetchPosts = async () => {
       try {
@@ -80,24 +105,16 @@ function HomePage() {
     fetchPosts();
   }, []);
 
-  // Modal de eliminación
+  // Modal de eliminación (Lógica existente)
   const [toDeleteId, setToDeleteId] = useState(null);
-
   const openDeleteModal = (id) => setToDeleteId(id);
   const closeDeleteModal = () => setToDeleteId(null);
   const confirmDelete = () => {
-    // TODO: aquí llamas a tu API (DELETE /embeds/:id)
     setEmbeds((prev) => prev.filter((e) => e.id !== toDeleteId));
     closeDeleteModal();
   };
 
-  // Datos de ejemplo
-  const recientes = Array(10).fill({ title: "Pokémon", author: "Jordi" });
-  const siguiendo = [
-    { name: "Jordi", pic: "https://placehold.co/40x40/E58D00/1E1B3A?text=J" },
-    { name: "Maye", pic: "https://placehold.co/40x40/00B0FF/1E1B3A?text=M" },
-    { name: "Wiskas", pic: "https://placehold.co/40x40/2C264C/FFFFFF?text=W" },
-  ];
+  // Datos de ejemplo (Solo dejamos el Top, ya no necesitamos 'siguiendo' falso)
   const top = [
     { title: "Top", artist: "prettynightmare", album: "phunk rocker" },
     { title: "Stylus", artist: "stylus", album: "" },
@@ -111,10 +128,12 @@ function HomePage() {
       <Navbar />
       <main className="content-wrapper home-content-wrapper">
         <div className="home-left-column">
+          
+          {/* SECCIÓN TOP (Estática por ahora) */}
           <div className="box2 top-list">
             {top.map((item, index) => (
-              <Link to={`/Ranking/`}>
-                <div className="top-item" key={index}>
+              <Link to={`/Ranking/`} key={index}>
+                <div className="top-item">
                   <div className="top-item-icon">M</div>
                   <div className="top-item-info">
                     <h4>{item.title}</h4>
@@ -125,20 +144,31 @@ function HomePage() {
               </Link>
             ))}
           </div>
+
+          {/* SECCIÓN SIGUIENDO (DINÁMICA) */}
           <div className="box2 siguiendo-list">
             <h3>Siguiendo</h3>
-            {siguiendo.map((user, index) => (
-              <Link to={`/perfil/`}>
-                <div key={index} className="siguiendo-item">
-                  <img
-                    src={user.pic}
-                    alt={`Foto de ${user.name}`}
-                    className="siguiendo-pic"
-                  />
-                  <p>{user.name}</p>
-                </div>
-              </Link>
-            ))}
+            {followingList.length > 0 ? (
+              followingList.map((user) => (
+                // Enlazamos al perfil usando el ID real del usuario
+                <Link to={`/perfil/${user.id}`} key={user.id}>
+                  <div className="siguiendo-item">
+                    <img
+                      // Usamos la foto de la BD o una por defecto si es null
+                      src={user.fotografia || "https://dummyimage.com/40x40/2C264C/FFFFFF?text=" + user.nombre_usuario.charAt(0)}
+                      alt={`Foto de ${user.nombre_usuario}`}
+                      className="siguiendo-pic"
+                    />
+                    {/* Mostramos el nombre de usuario real */}
+                    <p>{user.nombre_usuario}</p>
+                  </div>
+                </Link>
+              ))
+            ) : (
+              <p style={{ padding: "10px", fontSize: "0.9rem", color: "#aaa" }}>
+                Aún no sigues a nadie.
+              </p>
+            )}
           </div>
         </div>
 

@@ -1,12 +1,11 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import PfCard from './PfCard'; 
-import star2 from '../assets/Star 2(1).png'
+import star2 from '../assets/Star 2(1).png';
 
 const ProfileEmbedCard = ({ id, title, likes, comments, openDeleteModal, isOwner }) => {
     const navigate = useNavigate();
-    return (
 
+    return (
         <Link 
             to={`/Ranking/${id}`} 
             className="pf-card-link-profile"
@@ -27,7 +26,8 @@ const ProfileEmbedCard = ({ id, title, likes, comments, openDeleteModal, isOwner
                             className="pf-act pf-edit" 
                             title="Editar embed"
                             onClick={(e) => {
-                                e.stopPropagation();
+                                e.preventDefault(); // 👈 ESTA LÍNEA ES CLAVE
+                                e.stopPropagation(); // Detiene la propagación al Link
                                 navigate(`/edit-embed/${id}`);
                             }} 
                         >
@@ -40,7 +40,7 @@ const ProfileEmbedCard = ({ id, title, likes, comments, openDeleteModal, isOwner
                             className="pf-act pf-del"
                             title="Eliminar embed"
                             onClick={(e) => {
-                                e.preventDefault();
+                                e.preventDefault(); // También agrégalo aquí por seguridad
                                 e.stopPropagation(); 
                                 openDeleteModal(id);
                             }}

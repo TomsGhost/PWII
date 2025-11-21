@@ -3,8 +3,17 @@ import { Link } from 'react-router-dom';
 import ActionButtons from './ActionButtons';
 import SpotifyPlayer from './SpotifyPlayer';
 
-const EmbedDetails = ({ songTitle, authorName, authorId, authorInfo, isFavorite, embedCode, onToggleFavorite, isLiked, onToggleLike }) => {
-    
+const EmbedDetails = ({ 
+    songTitle, 
+    authorName, 
+    authorId, 
+    authorInfo, 
+    embedCode, 
+    isFavorite, 
+    onToggleFavorite, 
+    isLiked, 
+    onToggleLike 
+}) => {
     
     const embedUrl = "https://open.spotify.com/embed/track/341PThF0i9Aw4c0p2FZY2K?utm_source=generator";
 
