@@ -41,10 +41,10 @@ export default function CreateEmbed() {
     e.preventDefault();
     let newErrors = {};
 
-    const titleRegex = /^[^"]*$/; // sin caracteres que puedan romper el código
-    const UrlRegex1 = /^https?:\/\/\S*embed\S*$/i; // url solamente + palabra 'embed'
+
+
     const UrlRegex2 =
-      /<(iframe|script)[\s\S]*src=["']https?:\/\/\S*embed\S*["'][\s\S]*>[\s\S]*<\/\1>/i; // etiquetas posibles + url + palabra 'embed'
+
 
     if (!title.trim()) {
       newErrors.title = "El título es obligatorio.";
@@ -79,7 +79,7 @@ export default function CreateEmbed() {
       return;
     }
 
-    //api
+
     const data = {
       id: localStorage.getItem("id"),
       title: title,
@@ -120,8 +120,7 @@ export default function CreateEmbed() {
       });
     }
 
-    //console.log("Crear embed:", { title, desc, url });
-    //navigate(-1);
+
   };
 
   return (
@@ -131,7 +130,7 @@ export default function CreateEmbed() {
       <div className="color"></div>
       <Navbar />
       <section className="ce-section">
-        {/* Contenido */}
+
         <main className="ce-container">
           <form className="ce-card" onSubmit={onSubmit}>
             <h1 className="ce-title">¿Qué quieres subir?</h1>

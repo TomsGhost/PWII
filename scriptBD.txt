@@ -1,0 +1,672 @@
+-- 1. LIMPIEZA E INICIO
+DROP SCHEMA IF EXISTS public CASCADE;
+CREATE SCHEMA public;
+
+-- 2. CREACIÓN DE TABLAS
+
+CREATE TABLE Usuario (
+    id SERIAL PRIMARY KEY,
+    nombre_completo VARCHAR(100) NOT NULL,
+    nombre_usuario VARCHAR(50) NOT NULL UNIQUE,
+    contrasena VARCHAR(255) NOT NULL,
+    correo VARCHAR(100) NOT NULL UNIQUE,
+    fotografia BYTEA, 
+    baja BOOLEAN DEFAULT FALSE
+);
+
+CREATE TABLE Publicacion (
+    id SERIAL PRIMARY KEY,
+    id_usuario INT NOT NULL,
+    titulo VARCHAR(150) NOT NULL,
+    descripcion VARCHAR(255),
+    texto TEXT NOT NULL,
+    baja BOOLEAN DEFAULT FALSE,
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_usuario) REFERENCES Usuario(id)
+);
+
+CREATE TABLE Me_gusta (
+    id_usuario INT NOT NULL,
+    id_publicacion INT NOT NULL,
+    PRIMARY KEY (id_usuario, id_publicacion),
+    FOREIGN KEY (id_usuario) REFERENCES Usuario(id),
+    FOREIGN KEY (id_publicacion) REFERENCES Publicacion(id)
+);
+
+CREATE TABLE Comentario (
+    id SERIAL PRIMARY KEY,
+    id_usuario INT NOT NULL,
+    id_publicacion INT NOT NULL,
+    comentario VARCHAR(500) NOT NULL,
+    FOREIGN KEY (id_usuario) REFERENCES Usuario(id),
+    FOREIGN KEY (id_publicacion) REFERENCES Publicacion(id)
+);
+
+CREATE TABLE Favorito (
+    id SERIAL PRIMARY KEY,
+    id_usuario INT NOT NULL,
+    id_publicacion INT NOT NULL,
+    descripcion VARCHAR(255),
+    FOREIGN KEY (id_usuario) REFERENCES Usuario(id),
+    FOREIGN KEY (id_publicacion) REFERENCES Publicacion(id)
+);
+
+CREATE TABLE Seguir (
+    id_usuarioA INT NOT NULL, 
+    id_usuarioB INT NOT NULL, 
+    PRIMARY KEY (id_usuarioA, id_usuarioB),
+    FOREIGN KEY (id_usuarioA) REFERENCES Usuario(id),
+    FOREIGN KEY (id_usuarioB) REFERENCES Usuario(id)
+);
+
+-- 3. FUNCIÓN AUTOMÁTICA PARA ACTUALIZAR FECHAS (Equivalente a ON UPDATE CURRENT_TIMESTAMP)
+CREATE OR REPLACE FUNCTION update_modified_column() 
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.fecha_actualizacion = now();
+    RETURN NEW; 
+END;
+$$ language 'plpgsql';
+
+CREATE TRIGGER update_publicacion_modtime 
+BEFORE UPDATE ON Publicacion 
+FOR EACH ROW EXECUTE PROCEDURE update_modified_column();
+
+
+-- 4. VISTAS (VIEWS)
+
+CREATE OR REPLACE VIEW V_ObtenerPublicaciones AS
+SELECT
+    P.id,
+    P.id_usuario,
+    P.titulo,
+    P.descripcion,
+    P.fecha_creacion,
+    COUNT(DISTINCT C.id) AS total_comentarios, 
+    COUNT(DISTINCT MG.id_usuario) AS total_me_gusta 
+FROM
+    Publicacion AS P
+LEFT JOIN
+    Comentario AS C ON P.id = C.id_publicacion
+LEFT JOIN
+    Me_gusta AS MG ON P.id = MG.id_publicacion
+WHERE
+    P.baja = FALSE
+GROUP BY
+    P.id, P.id_usuario, P.titulo, P.descripcion, P.fecha_creacion
+ORDER BY
+    P.fecha_creacion DESC
+LIMIT 10;
+
+-- 5. STORED PROCEDURES (CONVERTIDOS A FUNCIONES)
+
+-- SP_RegistrarUsuario
+CREATE OR REPLACE FUNCTION SP_RegistrarUsuario (
+    p_nombre_completo VARCHAR,
+    p_nombre_usuario VARCHAR,
+    p_contrasena VARCHAR,
+    p_correo VARCHAR,
+    p_fotografia BYTEA
+)
+RETURNS TABLE (id_registro INT, mensaje_estado TEXT) AS $$
+DECLARE 
+    v_usuario_existente_nombre INT := 0;
+    v_usuario_existente_correo INT := 0;
+    v_new_id INT;
+BEGIN
+    IF LENGTH(p_nombre_completo) > 99 THEN
+        RETURN QUERY SELECT NULL::INT, 'ERROR: El nombre completo no debe superar los 99 caracteres.'::TEXT;
+    
+    ELSEIF LENGTH(p_correo) > 99 THEN
+        RETURN QUERY SELECT NULL::INT, 'ERROR: El correo no debe superar los 99 caracteres.'::TEXT;
+        
+    ELSEIF LENGTH(p_nombre_usuario) > 49 OR p_nombre_usuario LIKE '% %' THEN
+        RETURN QUERY SELECT NULL::INT, 'ERROR: El nombre de usuario no es válido (máx 49 chars y sin espacios).'::TEXT;
+        
+    ELSEIF LENGTH(p_contrasena) < 8 OR LENGTH(p_contrasena) > 16 OR p_contrasena LIKE '% %' THEN
+        RETURN QUERY SELECT NULL::INT, 'ERROR: La contraseña debe tener entre 8 y 16 caracteres y no contener espacios.'::TEXT;
+
+    ELSE
+        SELECT COUNT(id) INTO v_usuario_existente_nombre FROM Usuario WHERE nombre_usuario = p_nombre_usuario;
+        SELECT COUNT(id) INTO v_usuario_existente_correo FROM Usuario WHERE correo = p_correo;
+
+        IF v_usuario_existente_nombre > 0 THEN
+            RETURN QUERY SELECT NULL::INT, 'ERROR: Nombre de usuario ya registrado'::TEXT;
+        ELSEIF v_usuario_existente_correo > 0 THEN
+            RETURN QUERY SELECT NULL::INT, 'ERROR: Correo ya registrado'::TEXT;
+        ELSE
+            INSERT INTO Usuario (nombre_completo, nombre_usuario, contrasena, correo, fotografia)
+            VALUES (p_nombre_completo, p_nombre_usuario, p_contrasena, p_correo, p_fotografia)
+            RETURNING id INTO v_new_id;
+
+            RETURN QUERY SELECT v_new_id, 'REGISTRO EXITOSO'::TEXT;
+        END IF;
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+-- SP_IniciarSesion
+CREATE OR REPLACE FUNCTION SP_IniciarSesion (
+    p_nombre_usuario VARCHAR,
+    p_contrasena VARCHAR
+)
+RETURNS TABLE (id INT, estado_sesion TEXT) AS $$
+DECLARE 
+    v_id INT;
+    v_contrasena_db VARCHAR;
+    v_baja_db BOOLEAN;
+BEGIN
+    SELECT U.id, U.contrasena, U.baja
+    INTO v_id, v_contrasena_db, v_baja_db
+    FROM Usuario U
+    WHERE U.nombre_usuario = p_nombre_usuario;
+
+    IF v_id IS NULL THEN
+        RETURN QUERY SELECT NULL::INT, 'USUARIO_NO_ENCONTRADO'::TEXT;
+    ELSEIF v_contrasena_db != p_contrasena THEN
+        RETURN QUERY SELECT NULL::INT, 'CONTRASENA_INCORRECTA'::TEXT;
+    ELSEIF v_baja_db = TRUE THEN
+        RETURN QUERY SELECT NULL::INT, 'DADO_BAJA'::TEXT;
+    ELSE
+        RETURN QUERY SELECT v_id, 'LOGIN_EXITOSO'::TEXT;
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+-- SP_ObtenerDatosDePerfil
+CREATE OR REPLACE FUNCTION SP_ObtenerDatosDePerfil (p_id INT)
+RETURNS TABLE (
+    nombre_completo VARCHAR,
+    nombre_usuario VARCHAR,
+    correo VARCHAR,
+    fotografia BYTEA,
+    estado_perfil TEXT
+) AS $$
+BEGIN
+    RETURN QUERY 
+    SELECT
+        U.nombre_completo,
+        U.nombre_usuario,
+        U.correo,
+        U.fotografia,
+        CASE 
+            WHEN U.baja = FALSE THEN 'ACTIVO'::TEXT
+            WHEN U.baja = TRUE THEN 'DADO_BAJA'::TEXT
+            ELSE 'NO_ENCONTRADO'::TEXT
+        END AS estado_perfil
+    FROM Usuario U
+    WHERE U.id = p_id;
+END;
+$$ LANGUAGE plpgsql;
+
+-- VerificarSiSigue
+CREATE OR REPLACE FUNCTION SP_VerificarSiSigue (p_id_seguidor INT, p_id_seguido INT)
+RETURNS TABLE (sigue_actualmente BIGINT) AS $$
+BEGIN
+    RETURN QUERY 
+    SELECT COUNT(*) 
+    FROM Seguir
+    WHERE id_usuarioA = p_id_seguidor AND id_usuarioB = p_id_seguido;
+END;
+$$ LANGUAGE plpgsql;
+
+-- SP_ObtenerPublicacionesPorUsuario
+CREATE OR REPLACE FUNCTION SP_ObtenerPublicacionesPorUsuario (p_id_usuario INT)
+RETURNS TABLE (
+    id INT,
+    titulo VARCHAR,
+    descripcion VARCHAR,
+    texto TEXT,
+    fecha_creacion TIMESTAMP,
+    fecha_actualizacion TIMESTAMP,
+    total_comentarios BIGINT,
+    total_me_gusta BIGINT
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT
+        P.id,
+        P.titulo,
+        P.descripcion,
+        P.texto,
+        P.fecha_creacion,
+        P.fecha_actualizacion,
+        COUNT(DISTINCT C.id) AS total_comentarios,
+        COUNT(DISTINCT MG.id_usuario) AS total_me_gusta
+    FROM Publicacion AS P
+    LEFT JOIN Comentario AS C ON P.id = C.id_publicacion
+    LEFT JOIN Me_gusta AS MG ON P.id = MG.id_publicacion
+    WHERE P.id_usuario = p_id_usuario AND P.baja = FALSE
+    GROUP BY P.id, P.titulo, P.descripcion, P.texto, P.fecha_creacion, P.fecha_actualizacion 
+    ORDER BY P.fecha_creacion DESC;
+END;
+$$ LANGUAGE plpgsql;
+
+-- SP_ObtenerFeed
+CREATE OR REPLACE FUNCTION SP_ObtenerFeed (p_id_usuario INT)
+RETURNS TABLE (
+    id INT,
+    titulo VARCHAR,
+    descripcion VARCHAR,
+    fecha_creacion TIMESTAMP,
+    nombre_usuario VARCHAR
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT
+        P.id,
+        P.titulo,
+        P.descripcion,
+        P.fecha_creacion,
+        U.nombre_usuario
+    FROM Publicacion P
+    JOIN Usuario U ON P.id_usuario = U.id
+    WHERE P.id_usuario IN (
+        SELECT id_usuarioB FROM Seguir WHERE id_usuarioA = p_id_usuario
+    )
+    AND P.baja = FALSE
+    ORDER BY P.fecha_creacion DESC;
+END;
+$$ LANGUAGE plpgsql;
+
+-- SP_EditarPerfil
+CREATE OR REPLACE FUNCTION SP_EditarPerfil (
+    p_id INT,
+    p_nombre_completo VARCHAR,
+    p_correo VARCHAR,
+    p_fotografia BYTEA
+)
+RETURNS TABLE (estado_edicion TEXT) AS $$
+BEGIN
+    IF LENGTH(TRIM(p_nombre_completo)) = 0 OR LENGTH(p_nombre_completo) > 100 THEN
+        RETURN QUERY SELECT 'ERROR: Nombre inválido'::TEXT;
+    ELSEIF LENGTH(TRIM(p_correo)) = 0 OR LENGTH(p_correo) > 100 THEN
+        RETURN QUERY SELECT 'ERROR: Correo inválido'::TEXT;
+    ELSE
+        UPDATE Usuario
+        SET nombre_completo = p_nombre_completo,
+            correo = p_correo,
+            fotografia = p_fotografia
+        WHERE id = p_id AND baja = FALSE;
+
+        RETURN QUERY SELECT 'PERFIL_ACTUALIZADO'::TEXT;
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+-- SP_CrearPublicacion
+CREATE OR REPLACE FUNCTION SP_CrearPublicacion (
+    p_id_usuario INT,
+    p_titulo VARCHAR,
+    p_descripcion VARCHAR,
+    p_texto TEXT
+)
+RETURNS TABLE (id_publicacion INT, estado TEXT) AS $$
+DECLARE
+    v_new_id INT;
+BEGIN
+    IF LENGTH(TRIM(p_titulo)) = 0 OR LENGTH(p_titulo) > 150 THEN
+        RETURN QUERY SELECT NULL::INT, 'ERROR: Título inválido'::TEXT;
+    ELSEIF LENGTH(TRIM(p_texto)) = 0 THEN
+        RETURN QUERY SELECT NULL::INT, 'ERROR: El texto no puede estar vacío'::TEXT;
+    ELSE
+        INSERT INTO Publicacion (id_usuario, titulo, descripcion, texto) 
+        VALUES (p_id_usuario, p_titulo, p_descripcion, p_texto)
+        RETURNING id INTO v_new_id;
+
+        RETURN QUERY SELECT v_new_id, 'PUBLICACION_CREADA'::TEXT;
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+-- ObtenerPublicacionPorId
+CREATE OR REPLACE FUNCTION ObtenerPublicacionPorId (publicacion_id INT)
+RETURNS TABLE (
+    id INT,
+    id_autor INT,
+    nombre_autor VARCHAR,
+    titulo VARCHAR,
+    descripcion VARCHAR,
+    texto TEXT,
+    fecha_creacion TIMESTAMP,
+    fecha_actualizacion TIMESTAMP,
+    baja BOOLEAN,
+    total_comentarios BIGINT,
+    total_me_gusta BIGINT
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT
+        P.id,
+        P.id_usuario AS id_autor,
+        U.nombre_usuario AS nombre_autor,
+        P.titulo,
+        P.descripcion,
+        P.texto,
+        P.fecha_creacion,
+        P.fecha_actualizacion,
+        P.baja,
+        COUNT(DISTINCT C.id) AS total_comentarios,
+        COUNT(DISTINCT MG.id_usuario) AS total_me_gusta
+    FROM Publicacion AS P
+    JOIN Usuario AS U ON P.id_usuario = U.id
+    LEFT JOIN Comentario AS C ON P.id = C.id_publicacion
+    LEFT JOIN Me_gusta AS MG ON P.id = MG.id_publicacion
+    WHERE P.id = publicacion_id
+    GROUP BY P.id, P.id_usuario, U.nombre_usuario, P.titulo, P.descripcion, P.texto, P.fecha_creacion, P.fecha_actualizacion, P.baja;
+END;
+$$ LANGUAGE plpgsql;
+
+-- SP_EditarPublicacion
+CREATE OR REPLACE FUNCTION SP_EditarPublicacion (
+    p_id_publicacion INT,
+    p_nuevo_titulo VARCHAR,
+    p_nueva_descripcion VARCHAR,
+    p_nuevo_texto TEXT
+)
+RETURNS TABLE (rows_affected INT) AS $$
+DECLARE
+    v_affected INT;
+BEGIN
+    IF LENGTH(p_nuevo_titulo) > 150 THEN
+        RAISE EXCEPTION 'El título excede el máximo permitido (150 caracteres).';
+    END IF;
+    
+    IF LENGTH(p_nueva_descripcion) > 255 THEN
+        RAISE EXCEPTION 'La descripción excede el máximo permitido (255 caracteres).';
+    END IF;
+
+    UPDATE Publicacion
+    SET titulo = p_nuevo_titulo,
+        descripcion = p_nueva_descripcion,
+        texto = p_nuevo_texto
+    WHERE id = p_id_publicacion;
+        
+    GET DIAGNOSTICS v_affected = ROW_COUNT;
+    RETURN QUERY SELECT v_affected;
+END;
+$$ LANGUAGE plpgsql;
+
+-- SP_BajaLogicaPublicacion
+CREATE OR REPLACE FUNCTION SP_BajaLogicaPublicacion (
+    p_id_publicacion INT,
+    p_id_usuario_autor INT
+)
+RETURNS TABLE (rows_affected INT) AS $$
+DECLARE
+    v_affected INT;
+BEGIN
+    UPDATE Publicacion
+    SET baja = TRUE
+    WHERE id = p_id_publicacion AND id_usuario = p_id_usuario_autor;
+        
+    GET DIAGNOSTICS v_affected = ROW_COUNT;
+    RETURN QUERY SELECT v_affected;
+END;
+$$ LANGUAGE plpgsql;
+
+-- SP_ObtenerTop3Publicaciones
+CREATE OR REPLACE FUNCTION SP_ObtenerTop3Publicaciones()
+RETURNS TABLE (
+    id INT,
+    titulo VARCHAR,
+    descripcion VARCHAR,
+    fecha_creacion TIMESTAMP,
+    autor VARCHAR,
+    total_likes BIGINT
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        P.id,
+        P.titulo,
+        P.descripcion,
+        P.fecha_creacion,
+        U.nombre_usuario as autor,
+        COUNT(M.id_usuario) as total_likes
+    FROM Publicacion P
+    LEFT JOIN Me_gusta M ON P.id = M.id_publicacion
+    INNER JOIN Usuario U ON P.id_usuario = U.id
+    WHERE P.baja = FALSE 
+    GROUP BY P.id, P.titulo, P.descripcion, P.fecha_creacion, U.nombre_usuario
+    ORDER BY total_likes DESC 
+    LIMIT 3;
+END;
+$$ LANGUAGE plpgsql;
+
+-- SP_ObtenerTop5MasComentadas
+CREATE OR REPLACE FUNCTION SP_ObtenerTop5MasComentadas()
+RETURNS TABLE (
+    id INT,
+    titulo VARCHAR,
+    autor VARCHAR,
+    total_comentarios BIGINT
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        P.id,
+        P.titulo,
+        U.nombre_usuario as autor,
+        COUNT(C.id) as total_comentarios
+    FROM Publicacion P
+    LEFT JOIN Comentario C ON P.id = C.id_publicacion
+    INNER JOIN Usuario U ON P.id_usuario = U.id
+    WHERE P.baja = FALSE
+    GROUP BY P.id, P.titulo, U.nombre_usuario
+    ORDER BY total_comentarios DESC
+    LIMIT 5; 
+END;
+$$ LANGUAGE plpgsql;
+
+-- SP_BuscarPublicaciones
+CREATE OR REPLACE FUNCTION SP_BuscarPublicaciones(p_busqueda VARCHAR)
+RETURNS TABLE (
+    id INT,
+    titulo VARCHAR,
+    descripcion VARCHAR,
+    fecha_creacion TIMESTAMP,
+    autor VARCHAR,
+    autor_foto BYTEA,
+    total_likes BIGINT,
+    total_comentarios BIGINT
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        P.id,
+        P.titulo,
+        P.descripcion,
+        P.fecha_creacion,
+        U.nombre_usuario as autor,
+        U.fotografia as autor_foto,
+        (SELECT COUNT(*) FROM Me_gusta WHERE id_publicacion = P.id) as total_likes,
+        (SELECT COUNT(*) FROM Comentario WHERE id_publicacion = P.id) as total_comentarios
+    FROM Publicacion P
+    INNER JOIN Usuario U ON P.id_usuario = U.id
+    WHERE P.baja = FALSE 
+      AND P.titulo LIKE CONCAT('%', p_busqueda, '%')
+    ORDER BY P.fecha_creacion DESC;
+END;
+$$ LANGUAGE plpgsql;
+
+-- SP_CrearComentario
+CREATE OR REPLACE FUNCTION SP_CrearComentario (
+    p_id_usuario INT,        
+    p_id_publicacion INT,    
+    p_texto_comentario VARCHAR
+)
+RETURNS TABLE (nuevo_comentario_id INT) AS $$
+DECLARE
+    v_new_id INT;
+BEGIN
+    IF p_texto_comentario IS NULL OR LENGTH(TRIM(p_texto_comentario)) = 0 THEN
+        RAISE EXCEPTION 'El comentario no puede estar vacío.';
+    END IF;
+
+    IF LENGTH(p_texto_comentario) > 500 THEN
+        RAISE EXCEPTION 'El comentario excede el máximo permitido (500 caracteres).';
+    END IF;
+
+    INSERT INTO Comentario (id_usuario, id_publicacion, comentario)
+    VALUES (p_id_usuario, p_id_publicacion, p_texto_comentario)
+    RETURNING id INTO v_new_id;
+    
+    RETURN QUERY SELECT v_new_id;
+END;
+$$ LANGUAGE plpgsql;
+
+-- SP_ObtenerComentariosPorPublicacion
+CREATE OR REPLACE FUNCTION SP_ObtenerComentariosPorPublicacion (p_id_publicacion INT)
+RETURNS TABLE (
+    id INT,
+    comentario VARCHAR,
+    id_usuario INT,
+    nombre_usuario VARCHAR
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT
+        C.id,
+        C.comentario,
+        C.id_usuario,
+        U.nombre_usuario
+    FROM Comentario AS C
+    JOIN Usuario AS U ON C.id_usuario = U.id
+    WHERE C.id_publicacion = p_id_publicacion;
+END;
+$$ LANGUAGE plpgsql;
+
+-- SP_AgregarFavoritoConNota
+CREATE OR REPLACE FUNCTION SP_AgregarFavoritoConNota (
+    p_id_usuario INT,      
+    p_id_publicacion INT,   
+    p_descripcion VARCHAR
+)
+RETURNS TABLE (nuevo_favorito_id INT) AS $$
+DECLARE 
+    favorito_existente INT;
+    v_new_id INT;
+BEGIN
+    SELECT id INTO favorito_existente
+    FROM Favorito
+    WHERE id_usuario = p_id_usuario AND id_publicacion = p_id_publicacion
+    LIMIT 1;
+
+    IF favorito_existente IS NULL THEN
+        IF LENGTH(p_descripcion) > 255 THEN
+            RAISE EXCEPTION 'La nota del favorito excede los 255 caracteres.';
+        END IF;
+        
+        INSERT INTO Favorito (id_usuario, id_publicacion, descripcion)
+        VALUES (p_id_usuario, p_id_publicacion, p_descripcion)
+        RETURNING id INTO v_new_id;
+
+        RETURN QUERY SELECT v_new_id;
+    ELSE
+        RAISE EXCEPTION 'Esta publicación ya está marcada como favorita.';
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+-- SP_EliminarFavorito
+CREATE OR REPLACE FUNCTION SP_EliminarFavorito (
+    p_id_usuario INT,      
+    p_id_publicacion INT    
+)
+RETURNS TABLE (rows_affected INT) AS $$
+DECLARE
+    v_affected INT;
+BEGIN
+    DELETE FROM Favorito
+    WHERE id_usuario = p_id_usuario AND id_publicacion = p_id_publicacion;
+        
+    GET DIAGNOSTICS v_affected = ROW_COUNT;
+    RETURN QUERY SELECT v_affected;
+END;
+$$ LANGUAGE plpgsql;
+
+-- SP_ObtenerFavoritosPorUsuario
+CREATE OR REPLACE FUNCTION SP_ObtenerFavoritosPorUsuario (p_id_usuario INT)
+RETURNS TABLE (
+    favorito_id INT,
+    nota_favorito VARCHAR,
+    publicacion_id INT,
+    titulo VARCHAR,
+    embed_code TEXT,
+    autor_original VARCHAR
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT
+        F.id AS favorito_id,
+        F.descripcion AS nota_favorito,
+        P.id AS publicacion_id,
+        P.titulo,
+        P.texto AS embed_code,
+        U.nombre_usuario AS autor_original
+    FROM Favorito AS F
+    JOIN Publicacion AS P ON F.id_publicacion = P.id
+    JOIN Usuario AS U ON P.id_usuario = U.id
+    WHERE F.id_usuario = p_id_usuario
+    ORDER BY F.id DESC 
+    LIMIT 3; 
+END;
+$$ LANGUAGE plpgsql;
+
+-- SP_SeguirUsuario
+CREATE OR REPLACE FUNCTION SP_SeguirUsuario (
+    p_id_seguidor INT,
+    p_id_seguido INT
+)
+RETURNS TABLE (mensaje TEXT) AS $$
+BEGIN
+    IF p_id_seguidor = p_id_seguido THEN
+        RAISE EXCEPTION 'No puedes seguirte a ti mismo.';
+    END IF;
+
+    IF EXISTS (SELECT 1 FROM Seguir WHERE id_usuarioA = p_id_seguidor AND id_usuarioB = p_id_seguido) THEN
+        RAISE EXCEPTION 'Ya sigues a este usuario.';
+    ELSE
+        INSERT INTO Seguir (id_usuarioA, id_usuarioB)
+        VALUES (p_id_seguidor, p_id_seguido);
+    END IF;
+    
+    RETURN QUERY SELECT 'OK'::TEXT;
+END;
+$$ LANGUAGE plpgsql;
+
+-- SP_DejarDeSeguirUsuario
+CREATE OR REPLACE FUNCTION SP_DejarDeSeguirUsuario (
+    p_id_seguidor INT,
+    p_id_seguido INT
+)
+RETURNS TABLE (mensaje TEXT) AS $$
+BEGIN
+    DELETE FROM Seguir 
+    WHERE id_usuarioA = p_id_seguidor AND id_usuarioB = p_id_seguido;
+    RETURN QUERY SELECT 'OK'::TEXT;
+END;
+$$ LANGUAGE plpgsql;
+
+-- SP_ObtenerSiguiendo
+CREATE OR REPLACE FUNCTION SP_ObtenerSiguiendo(p_id_usuario INT)
+RETURNS TABLE (
+    id INT, 
+    nombre_usuario VARCHAR, 
+    nombre_completo VARCHAR, 
+    fotografia BYTEA
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        u.id, 
+        u.nombre_usuario, 
+        u.nombre_completo, 
+        u.fotografia
+    FROM Usuario u
+    INNER JOIN Seguir s ON u.id = s.id_usuarioB
+    WHERE s.id_usuarioA = p_id_usuario;
+END;
+$$ LANGUAGE plpgsql;

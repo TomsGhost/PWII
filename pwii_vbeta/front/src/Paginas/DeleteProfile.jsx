@@ -15,7 +15,7 @@ export default function DeleteProfile({ onConfirm, onCancel }) {
   const handleCancel = () => {
     if (onCancel) return onCancel();
     console.log("Eliminar perfil: cancelado");
-    navigate(-1); // volver
+
   };
 
   return (
@@ -25,7 +25,7 @@ export default function DeleteProfile({ onConfirm, onCancel }) {
       <div className="color"></div>
       <div className="color"></div>
         <Navbar />
-      {/* Contenido central */}
+
       <main className="dp-container">
         <div className="dp-card">
           <h1 className="dp-title">¿Seguro que quieres decir adiós...?</h1>

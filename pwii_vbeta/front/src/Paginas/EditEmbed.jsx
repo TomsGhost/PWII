@@ -41,7 +41,7 @@ export default function EditEmbed() {
 
     if (/spotify\.com/.test(u)) {
       if (/\/embed\//.test(u)) return u;
-      // convierte /track/ID a /embed/track/ID
+
       const idMatch = u.match(
         /spotify\.com\/(track|album|playlist)\/([A-Za-z0-9]+)/
       );
@@ -52,20 +52,20 @@ export default function EditEmbed() {
 
     // YouTube
     if (/youtu\.be\/|youtube\.com/.test(u)) {
-      // youtu.be/ID
+  
       const short = u.match(/youtu\.be\/([A-Za-z0-9_-]+)/);
       if (short) return `https://www.youtube.com/embed/${short[1]}`;
 
-      // watch?v=ID
+
       const v = new URL(u, "https://youtube.com");
       const id = v.searchParams.get("v");
       if (id) return `https://www.youtube.com/embed/${id}`;
 
-      // ya es /embed/ID
+
       if (/\/embed\//.test(u)) return u;
     }
 
-    // SoundCloud (usamos el player con URL codificada)
+
     if (/soundcloud\.com/.test(u)) {
       const enc = encodeURIComponent(u);
       return `https://w.soundcloud.com/player/?url=${enc}&color=%23ff5500&inverse=false&auto_play=false&show_user=true`;
@@ -125,7 +125,7 @@ export default function EditEmbed() {
         <Navbar />
     <section className="eb-section">
    
-      {/* Contenido */}
+
       <main className="eb-container">
         <form className="eb-card" onSubmit={onSubmit}>
           <h1 className="eb-title">Una manita de gato</h1>

@@ -1,7 +1,8 @@
 const express = require("express");
 const cors = require("cors");
-const mysql2 = require("mysql2");
+const { Pool } = require("pg"); // CAMBIO: Usamos pg en lugar de mysql2
 const multer = require("multer");
+require("dotenv").config(); // CAMBIO: Para leer las variables de entorno de Render
 
 const app = express();
 
@@ -9,34 +10,25 @@ app.use(cors());
 app.use(express.json());
 
 app.get("/", (req, resp) => {
-  resp.json("Grettings programs");
+  resp.json("Greetings programs from PostgreSQL");
 });
 
-app.listen(3001, () => {
-  console.log("Servidor conectado");
+// CAMBIO: Usar el puerto que Render nos asigne o el 3001 por defecto
+const PORT = process.env.PORT || 3001;
+app.listen(PORT, () => {
+  console.log(`Servidor conectado en el puerto ${PORT}`);
 });
 
-const db = mysql2.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "$0lstici0XD",
-  database: "PWII",
-  port: 3306,
+// CAMBIO: Configuración de conexión para PostgreSQL en Render
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL, // Render llena esto automáticamente
+  ssl: {
+    rejectUnauthorized: false, // Necesario para que Render acepte la conexión segura
+  },
 });
-
-/* MAYO
-const db = mysql2.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "mayo",
-  database: "PWII",
-  port: 3306,
-});
-*/
 
 const filefilter = (req, file, cb) => {
   const formatos = ["image/png", "image/jpg", "image/jpeg"];
-
   if (formatos.includes(file.mimetype)) {
     cb(null, true);
   } else {
@@ -51,23 +43,24 @@ const Archivo = multer({
   fileFilter: filefilter,
 });
 
+// ---------------- RUTAS ------------------
+
 app.post("/register", Archivo.single("file"), (req, resp) => {
   const { name, aka, mail, pass } = req.body;
-  const imagen = req.file.buffer.toString("base64");
+  // Manejo seguro si no se sube imagen
+  const imagen = req.file ? req.file.buffer.toString("base64") : null;
 
-  db.query(
-    "CALL SP_RegistrarUsuario(?, ?, ?, ?, ?)",
+  // CAMBIO: CALL -> SELECT * FROM funcion($1, $2...)
+  pool.query(
+    "SELECT * FROM SP_RegistrarUsuario($1, $2, $3, $4, $5)",
     [name, aka, pass, mail, imagen],
     (err, result) => {
       if (err) {
-        console.error("Error en la consulta a la BD:", err);
-        return resp
-          .status(500)
-          .json({ msg: "Error interno del servidor al intentar registrar." });
+        console.error("Error BD:", err);
+        return resp.status(500).json({ msg: "Error al registrar." });
       }
-      resp.json({
-        msg: result,
-      });
+      // CAMBIO: result[0] -> result.rows
+      resp.json({ msg: result.rows });
     }
   );
 });
@@ -75,19 +68,15 @@ app.post("/register", Archivo.single("file"), (req, resp) => {
 app.post("/login", (req, resp) => {
   const { username, password } = req.body;
 
-  db.query(
-    "CALL SP_IniciarSesion(?, ?)",
+  pool.query(
+    "SELECT * FROM SP_IniciarSesion($1, $2)",
     [username, password],
     (err, result) => {
       if (err) {
-        console.error("Error en la consulta a la BD:", err);
-        return resp
-          .status(500)
-          .json({ msg: "Error interno del servidor al intentar ingresar." });
+        console.error("Error BD:", err);
+        return resp.status(500).json({ msg: "Error al ingresar." });
       }
-      resp.json({
-        msg: result,
-      });
+      resp.json({ msg: result.rows });
     }
   );
 });
@@ -95,48 +84,41 @@ app.post("/login", (req, resp) => {
 app.post("/getUserData", (req, resp) => {
   const { id } = req.body;
 
-  db.query("CALL SP_ObtenerDatosDePerfil(?)", [id], (err, result) => {
+  pool.query("SELECT * FROM SP_ObtenerDatosDePerfil($1)", [id], (err, result) => {
     if (err) {
-      console.error("Error en la consulta a la BD:", err);
-      return resp
-        .status(500)
-        .json({ msg: "Error interno del servidor al intentar ingresar." });
+      console.error("Error BD:", err);
+      return resp.status(500).json({ msg: "Error interno." });
     }
-    resp.json({
-      msg: result,
-    });
+    resp.json({ msg: result.rows });
   });
 });
 
 app.post("/createEmbed", (req, resp) => {
   const { id, title, desc, embed } = req.body;
 
-  db.query(
-    "CALL SP_CrearPublicacion(?, ?, ?, ?)",
+  pool.query(
+    "SELECT * FROM SP_CrearPublicacion($1, $2, $3, $4)",
     [id, title, desc, embed],
     (err, result) => {
       if (err) {
-        console.error("Error en la consulta a la BD:", err);
-        return resp
-          .status(500)
-          .json({ msg: "Error interno al intentar crear la publicacion." });
+        console.error("Error BD:", err);
+        return resp.status(500).json({ msg: "Error al crear publicación." });
       }
-      resp.json({
-        msg: result,
-      });
+      resp.json({ msg: result.rows });
     }
   );
 });
 
 app.get("/getPosts", (req, resp) => {
-  db.query("SELECT * FROM V_ObtenerPublicaciones", (err, result) => {
+  // Las VISTAS (Views) se llaman igual en Postgres
+  pool.query("SELECT * FROM V_ObtenerPublicaciones", (err, result) => {
     if (err) {
-      console.error("Error en la consulta a la BD:", err);
-      return resp.status(500).json({
-        msg: "Error interno del servidor al obtener las publicaciones.",
-      });
+      console.error("Error BD:", err);
+      return resp.status(500).json({ msg: "Error al obtener publicaciones." });
     }
-    const posts = result.map((post) => ({
+    
+    // En Postgres los nombres de columnas suelen venir en minúsculas por defecto
+    const posts = result.rows.map((post) => ({
       ...post,
       title: post.titulo,
       likes: post.total_me_gusta,
@@ -148,32 +130,27 @@ app.get("/getPosts", (req, resp) => {
 
 app.get("/getPostById/:id", (req, resp) => {
   const { id } = req.params;
-  db.query("CALL ObtenerPublicacionPorId(?)", [id], (err, result) => {
+  pool.query("SELECT * FROM ObtenerPublicacionPorId($1)", [id], (err, result) => {
     if (err) {
-      console.error("Error en la consulta a la BD:", err);
-      return resp
-        .status(500)
-        .json({ msg: "Error interno del servidor al obtener la publicacion." });
+      console.error("Error BD:", err);
+      return resp.status(500).json({ msg: "Error al obtener publicación." });
     }
-    resp.json(result);
+    resp.json(result.rows);
   });
 });
 
 app.get("/getCommentsByPostId/:id", (req, resp) => {
   const { id } = req.params;
-  db.query(
-    "CALL SP_ObtenerComentariosPorPublicacion(?)",
+  pool.query(
+    "SELECT * FROM SP_ObtenerComentariosPorPublicacion($1)",
     [id],
     (err, result) => {
       if (err) {
-        console.error("Error en la consulta a la BD:", err);
-        return resp.status(500).json({
-          msg: "Error interno del servidor al obtener los comentarios.",
-        });
+        console.error("Error BD:", err);
+        return resp.status(500).json({ msg: "Error al obtener comentarios." });
       }
-      // The result from a stored procedure call is often an array containing multiple result sets.
-      // We are interested in the first one, which contains the comments.
-      resp.json(result[0]);
+      // Postgres devuelve un array directo en result.rows
+      resp.json(result.rows);
     }
   );
 });
@@ -182,40 +159,34 @@ app.get("/verificar-seguimiento", (req, resp) => {
   const { seguidorId, seguidoId } = req.query;
 
   if (!seguidorId || !seguidoId) {
-    return resp
-      .status(400)
-      .json({ msg: "Faltan los parámetros 'seguidorId' o 'seguidoId'." });
+    return resp.status(400).json({ msg: "Faltan parámetros." });
   }
 
-  const query = "CALL VerificarSiSigue(?, ?)";
-  const params = [seguidorId, seguidoId];
+  pool.query(
+    "SELECT * FROM SP_VerificarSiSigue($1, $2)",
+    [seguidorId, seguidoId],
+    (err, result) => {
+      if (err) {
+        console.error("Error BD:", err);
+        return resp.status(500).json({ msg: "Error interno." });
+      }
+      const sigue_actualmente =
+        result && result.rows.length > 0 ? result.rows[0].sigue_actualmente : 0;
 
-  db.query(query, params, (err, result) => {
-    if (err) {
-      console.error("Error al verificar la relación de seguimiento:", err);
-      return resp.status(500).json({
-        msg: "Error interno del servidor al verificar el seguimiento.",
-      });
+      resp.json({ sigue_actualmente: sigue_actualmente });
     }
-    const sigue_actualmente =
-      result && result[0] && result[0][0] ? result[0][0].sigue_actualmente : 0;
-
-    resp.json({ sigue_actualmente: sigue_actualmente });
-  });
+  );
 });
-
 
 app.get("/posts/:id", (req, resp) => {
   const { id } = req.params;
 
-  db.query("CALL SP_ObtenerPublicacionesPorUsuario(?)", [id], (err, result) => {
+  pool.query("SELECT * FROM SP_ObtenerPublicacionesPorUsuario($1)", [id], (err, result) => {
     if (err) {
-      console.error("Error en la consulta a la BD:", err);
-      return resp.status(500).json({
-        msg: "Error interno del servidor al obtener las publicaciones del usuario.",
-      });
+      console.error("Error BD:", err);
+      return resp.status(500).json({ msg: "Error interno." });
     }
-    resp.json(result[0]);
+    resp.json(result.rows);
   });
 });
 
@@ -223,19 +194,17 @@ app.put("/updatePost/:id", (req, resp) => {
   const { id } = req.params;
   const { title, desc, embed } = req.body;
 
-  db.query(
-    "CALL SP_EditarPublicacion(?, ?, ?, ?)",
+  pool.query(
+    "SELECT * FROM SP_EditarPublicacion($1, $2, $3, $4)",
     [id, title, desc, embed],
     (err, result) => {
       if (err) {
-        console.error("Error en la consulta a la BD:", err);
-        return resp.status(500).json({
-          msg: "Error interno del servidor al intentar actualizar la publicacion.",
-        });
+        console.error("Error BD:", err);
+        return resp.status(500).json({ msg: "Error al actualizar." });
       }
       resp.json({
         msg: "Publicacion actualizada correctamente.",
-        data: result,
+        data: result.rows,
       });
     }
   );
@@ -249,26 +218,21 @@ app.put("/deletePost/:id", (req, resp) => {
     return resp.status(400).json({ msg: "El id del autor es requerido." });
   }
 
-  db.query(
-    "CALL SP_BajaLogicaPublicacion(?, ?)",
+  pool.query(
+    "SELECT * FROM SP_BajaLogicaPublicacion($1, $2)",
     [id, id_usuario_autor],
     (err, result) => {
       if (err) {
-        console.error("Error en la consulta a la BD:", err);
-        return resp.status(500).json({
-          msg: "Error interno del servidor al intentar eliminar la publicacion.",
-        });
+        console.error("Error BD:", err);
+        return resp.status(500).json({ msg: "Error al eliminar." });
       }
 
-      const rowsAffected =
-        result && result[0] && result[0][0] ? result[0][0].rows_affected : 0;
+      const rowsAffected = result.rows.length > 0 ? result.rows[0].rows_affected : 0;
 
       if (rowsAffected > 0) {
         resp.json({ msg: "Publicacion eliminada lógicamente." });
       } else {
-        resp.status(404).json({
-          msg: "No se encontró la publicación o el usuario no tiene permisos para eliminarla.",
-        });
+        resp.status(404).json({ msg: "No encontrado o sin permisos." });
       }
     }
   );
@@ -279,19 +243,17 @@ app.put("/updateProfile/:id", Archivo.single("file"), (req, resp) => {
   const { name, mail } = req.body;
   const imagen = req.file ? req.file.buffer.toString("base64") : null;
 
-  db.query(
-    "CALL SP_EditarPerfil(?, ?, ?, ?)",
+  pool.query(
+    "SELECT * FROM SP_EditarPerfil($1, $2, $3, $4)",
     [id, name, mail, imagen],
     (err, result) => {
       if (err) {
-        console.error("Error en la consulta a la BD:", err);
-        return resp.status(500).json({
-          msg: "Error interno del servidor al intentar actualizar el perfil.",
-        });
+        console.error("Error BD:", err);
+        return resp.status(500).json({ msg: "Error al actualizar perfil." });
       }
       resp.json({
         msg: "Perfil actualizado correctamente.",
-        data: result,
+        data: result.rows,
       });
     }
   );
@@ -299,29 +261,17 @@ app.put("/updateProfile/:id", Archivo.single("file"), (req, resp) => {
 
 app.post("/createComment", (req, resp) => {
   const { id_usuario, id_publicacion, texto_comentario } = req.body;
-  console.log("Received data for createComment:", {
-    id_usuario,
-    id_publicacion,
-    texto_comentario,
-  });
 
-  db.query(
-    "CALL SP_CrearComentario(?, ?, ?)",
+  pool.query(
+    "SELECT * FROM SP_CrearComentario($1, $2, $3)",
     [id_usuario, id_publicacion, texto_comentario],
     (err, result) => {
       if (err) {
-        console.error("Error in DB query for createComment:", err);
-        console.error("MySQL error code:", err.code);
-        console.error("MySQL error message:", err.sqlMessage);
-        return resp.status(500).json({
-          msg: "Error interno del servidor al intentar crear el comentario.",
-          error: err.message,
-          mysqlError: err.sqlMessage,
-          mysqlErrorCode: err.code,
-        });
+        console.error("Error BD:", err);
+        return resp.status(500).json({ msg: "Error al crear comentario." });
       }
-      console.log("DB query result for createComment:", result);
-      const nuevoComentarioId = result[0][0].nuevo_comentario_id;
+      // En Postgres, si el SP retorna el ID, estará en la primera fila
+      const nuevoComentarioId = result.rows[0] ? result.rows[0].nuevo_comentario_id : null;
       resp.json({
         msg: "Comentario creado exitosamente.",
         nuevo_comentario_id: nuevoComentarioId,
@@ -334,56 +284,36 @@ app.get("/feed/:userId", (req, resp) => {
   const { userId } = req.params;
 
   if (!userId) {
-    return resp
-      .status(400)
-      .json({ msg: "El ID de usuario es requerido para obtener el feed." });
+    return resp.status(400).json({ msg: "El ID de usuario es requerido." });
   }
 
-  const query = "CALL SP_ObtenerFeed(?)";
-  const params = [userId];
-
-  db.query(query, params, (err, result) => {
+  pool.query("SELECT * FROM SP_ObtenerFeed($1)", [userId], (err, result) => {
     if (err) {
-      console.error("Error al obtener el feed de publicaciones:", err);
-      return resp.status(500).json({
-        msg: "Error interno del servidor al obtener el feed.",
-        error: err.sqlMessage,
-      });
+      console.error("Error BD:", err);
+      return resp.status(500).json({ msg: "Error al obtener feed." });
     }
-    resp.json(result[0]);
+    resp.json(result.rows);
   });
 });
-
 
 app.post("/addFavorite", (req, resp) => {
   const { id_usuario, id_publicacion, descripcion } = req.body;
 
   if (!id_usuario || !id_publicacion || descripcion === undefined) {
-    return resp
-      .status(400)
-      .json({ msg: "Faltan datos requeridos (usuario, publicación o nota)." });
+    return resp.status(400).json({ msg: "Faltan datos requeridos." });
   }
 
-  db.query(
-    "CALL SP_AgregarFavoritoConNota(?, ?, ?)",
+  pool.query(
+    "SELECT * FROM SP_AgregarFavoritoConNota($1, $2, $3)",
     [id_usuario, id_publicacion, descripcion],
     (err, result) => {
       if (err) {
-        console.error("Error al agregar Favorito con nota:", err);
-
-        if (err.sqlState === "45000") {
-          return resp.status(409).json({ msg: err.sqlMessage });
-        }
-
-        return resp
-          .status(500)
-          .json({ msg: "Error interno al procesar el Favorito." });
+        console.error("Error BD:", err);
+        // Postgres usa códigos diferentes, pero el 45000 de excepciones personalizadas puede variar
+        return resp.status(500).json({ msg: "Error al agregar favorito.", error: err.message });
       }
 
-      const nuevoFavoritoId =
-        result && result[0] && result[0][0]
-          ? result[0][0].nuevo_favorito_id
-          : null;
+      const nuevoFavoritoId = result.rows[0] ? result.rows[0].nuevo_favorito_id : null;
 
       resp.status(200).json({
         msg: "Publicación agregada a favoritos con nota exitosamente.",
@@ -394,44 +324,41 @@ app.post("/addFavorite", (req, resp) => {
 });
 
 app.post("/removeFavorite", (req, resp) => {
-    const { id_usuario, id_publicacion } = req.body;
+  const { id_usuario, id_publicacion } = req.body;
 
-    if (!id_usuario || !id_publicacion) {
-        return resp.status(400).json({ msg: "Faltan los IDs de usuario o publicación." });
+  if (!id_usuario || !id_publicacion) {
+    return resp.status(400).json({ msg: "Faltan IDs." });
+  }
+
+  pool.query(
+    "SELECT * FROM SP_EliminarFavorito($1, $2)",
+    [id_usuario, id_publicacion],
+    (err, result) => {
+      if (err) {
+        console.error("Error BD:", err);
+        return resp.status(500).json({ msg: "Error interno." });
+      }
+
+      const rowsAffected = result.rows[0] ? result.rows[0].rows_affected : 0;
+
+      if (rowsAffected > 0) {
+        resp.status(200).json({ msg: "Favorito eliminado exitosamente." });
+      } else {
+        resp.status(404).json({ msg: "No se encontró en favoritos." });
+      }
     }
-
-    db.query(
-        "CALL SP_EliminarFavorito(?, ?)",
-        [id_usuario, id_publicacion],
-        (err, result) => {
-            if (err) {
-                console.error("Error al quitar Favorito:", err);
-                return resp.status(500).json({ msg: "Error interno al quitar el Favorito." });
-            }
-            
-            const rowsAffected = result && result[0] && result[0][0] ? result[0][0].rows_affected : 0;
-            
-            if (rowsAffected > 0) {
-                resp.status(200).json({ msg: "Favorito eliminado exitosamente." });
-            } else {
-                resp.status(404).json({ msg: "La publicación no se encontró en favoritos." });
-            }
-        }
-    );
+  );
 });
 
 app.get("/favorites/:userId", (req, resp) => {
   const { userId } = req.params;
 
-  db.query("CALL SP_ObtenerFavoritosPorUsuario(?)", [userId], (err, result) => {
+  pool.query("SELECT * FROM SP_ObtenerFavoritosPorUsuario($1)", [userId], (err, result) => {
     if (err) {
-      console.error("Error al obtener favoritos:", err);
-      return resp
-        .status(500)
-        .json({ msg: "Error interno del servidor al obtener favoritos." });
+      console.error("Error BD:", err);
+      return resp.status(500).json({ msg: "Error al obtener favoritos." });
     }
-    // El resultado viene en result[0]
-    resp.json(result[0]);
+    resp.json(result.rows);
   });
 });
 
@@ -439,19 +366,12 @@ app.post("/follow", (req, resp) => {
   const { seguidorId, seguidoId } = req.body;
 
   if (!seguidorId || !seguidoId) {
-    return resp.status(400).json({ msg: "Faltan los parámetros 'seguidorId' o 'seguidoId'." });
+    return resp.status(400).json({ msg: "Faltan parámetros." });
   }
 
-  const query = "CALL SP_SeguirUsuario(?, ?)"; 
-  const params = [seguidorId, seguidoId];
-
-  db.query(query, params, (err, result) => {
+  pool.query("SELECT * FROM SP_SeguirUsuario($1, $2)", [seguidorId, seguidoId], (err, result) => {
     if (err) {
-       // ... (resto de tu código de error)
-       if (err.sqlState === "45000") {
-         return resp.status(409).json({ msg: err.sqlMessage });
-       }
-       return resp.status(500).json({ msg: "Error interno." });
+      return resp.status(500).json({ msg: "Error interno o ya sigues al usuario.", error: err.message });
     }
     resp.json({ msg: "Ahora sigues a este usuario." });
   });
@@ -461,99 +381,69 @@ app.post("/unfollow", (req, resp) => {
   const { seguidorId, seguidoId } = req.body;
 
   if (!seguidorId || !seguidoId) {
-    return resp.status(400).json({ msg: "Faltan los parámetros." });
-  }
-
-  // CORRECCIÓN: Agregamos "SP_" aquí
-  const query = "CALL SP_DejarDeSeguirUsuario(?, ?)"; 
-  const params = [seguidorId, seguidoId];
-
-  db.query(query, params, (err, result) => {
-    if (err) {
-      console.error("Error al dejar de seguir:", err);
-      return resp.status(500).json({ msg: "Error interno." });
-    }
-    resp.json({ msg: "Has dejado de seguir a este usuario." });
-  });
-});
-
-app.get("/verificar-seguimiento", (req, resp) => {
-  const { seguidorId, seguidoId } = req.query;
-
-  if (!seguidorId || !seguidoId) {
     return resp.status(400).json({ msg: "Faltan parámetros." });
   }
 
-  // AGREGAMOS "SP_" AQUÍ (Asegúrate de crear este procedimiento en SQL, ver Paso 2)
-  const query = "CALL SP_VerificarSiSigue(?, ?)";
-  const params = [seguidorId, seguidoId];
-
-  db.query(query, params, (err, result) => {
-    if (err) {
-      console.error("Error al verificar:", err);
-      return resp.status(500).json({ msg: "Error interno." });
+  pool.query(
+    "SELECT * FROM SP_DejarDeSeguirUsuario($1, $2)",
+    [seguidorId, seguidoId],
+    (err, result) => {
+      if (err) {
+        console.error("Error BD:", err);
+        return resp.status(500).json({ msg: "Error interno." });
+      }
+      resp.json({ msg: "Has dejado de seguir a este usuario." });
     }
-    // Ajuste para leer la respuesta del SP
-    const sigue_actualmente = result && result[0] && result[0][0] ? result[0][0].sigue_actualmente : 0;
-    resp.json({ sigue_actualmente: sigue_actualmente });
-  });
+  );
 });
 
 app.get("/getFollowing/:id", (req, resp) => {
   const { id } = req.params;
 
   if (!id) {
-    return resp.status(400).json({ msg: "Falta el ID del usuario." });
+    return resp.status(400).json({ msg: "Falta el ID." });
   }
 
-  db.query("CALL SP_ObtenerSiguiendo(?)", [id], (err, result) => {
+  pool.query("SELECT * FROM SP_ObtenerSiguiendo($1)", [id], (err, result) => {
     if (err) {
-      console.error("Error al obtener lista de seguidos:", err);
-      return resp.status(500).json({
-        msg: "Error interno al obtener la lista de seguidos.",
-      });
+      console.error("Error BD:", err);
+      return resp.status(500).json({ msg: "Error interno." });
     }
-    resp.json(result[0]);
+    resp.json(result.rows);
   });
 });
 
 app.get("/getTopPosts", (req, resp) => {
-  db.query("CALL SP_ObtenerTop3Publicaciones()", (err, result) => {
+  pool.query("SELECT * FROM SP_ObtenerTop3Publicaciones()", (err, result) => {
     if (err) {
-      console.error("Error al obtener el top de publicaciones:", err);
-      return resp.status(500).json({
-        msg: "Error interno del servidor al obtener el top.",
-      });
+      console.error("Error BD:", err);
+      return resp.status(500).json({ msg: "Error interno." });
     }
-    resp.json(result[0]);
+    resp.json(result.rows);
   });
 });
 
 app.get("/getTopCommented", (req, resp) => {
-  db.query("CALL SP_ObtenerTop5MasComentadas()", (err, result) => {
+  pool.query("SELECT * FROM SP_ObtenerTop5MasComentadas()", (err, result) => {
     if (err) {
-      console.error("Error al obtener top comentados:", err);
+      console.error("Error BD:", err);
       return resp.status(500).json({ msg: "Error interno." });
     }
-    resp.json(result[0]);
+    resp.json(result.rows);
   });
 });
 
 app.get("/search", (req, resp) => {
-  // Se espera algo como: localhost:3001/search?q=pokemon
   const { q } = req.query;
-
-  // Si no envían nada o envían vacío, devolvemos array vacío o error, tú decides.
   if (!q) {
-    return resp.json([]); 
+    return resp.json([]);
   }
 
-  db.query("CALL SP_BuscarPublicaciones(?)", [q], (err, result) => {
+  pool.query("SELECT * FROM SP_BuscarPublicaciones($1)", [q], (err, result) => {
     if (err) {
-      console.error("Error en la búsqueda:", err);
-      return resp.status(500).json({ msg: "Error interno al buscar." });
+      console.error("Error BD:", err);
+      return resp.status(500).json({ msg: "Error al buscar." });
     }
-    // Devolvemos la lista de resultados
-    resp.json(result[0]);
+    resp.json(result.rows);
   });
 });
