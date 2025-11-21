@@ -161,6 +161,21 @@ app.get("/getPostById/:id", (req, resp) => {
   });
 });
 
+app.get("/getCommentsByPostId/:id", (req, resp) => {
+  const { id } = req.params;
+  db.query("CALL SP_ObtenerComentariosPorPublicacion(?)", [id], (err, result) => {
+    if (err) {
+      console.error("Error en la consulta a la BD:", err);
+      return resp
+        .status(500)
+        .json({ msg: "Error interno del servidor al obtener los comentarios." });
+    }
+    // The result from a stored procedure call is often an array containing multiple result sets.
+    // We are interested in the first one, which contains the comments.
+    resp.json(result[0]);
+  });
+});
+
 app.get("/verificar-seguimiento", (req, resp) => {
   const { seguidorId, seguidoId } = req.query;
 
@@ -326,6 +341,35 @@ app.put("/updateProfile/:id", Archivo.single("file"), (req, resp) => {
       resp.json({
         msg: "Perfil actualizado correctamente.",
         data: result,
+      });
+    }
+  );
+});
+
+app.post("/createComment", (req, resp) => {
+  const { id_usuario, id_publicacion, texto_comentario } = req.body;
+  console.log("Received data for createComment:", { id_usuario, id_publicacion, texto_comentario });
+
+  db.query(
+    "CALL SP_CrearComentario(?, ?, ?)",
+    [id_usuario, id_publicacion, texto_comentario],
+    (err, result) => {
+      if (err) {
+        console.error("Error in DB query for createComment:", err);
+        console.error("MySQL error code:", err.code);
+        console.error("MySQL error message:", err.sqlMessage);
+        return resp.status(500).json({
+          msg: "Error interno del servidor al intentar crear el comentario.",
+          error: err.message,
+          mysqlError: err.sqlMessage,
+          mysqlErrorCode: err.code,
+        });
+      }
+      console.log("DB query result for createComment:", result);
+      const nuevoComentarioId = result[0][0].nuevo_comentario_id;
+      resp.json({
+        msg: "Comentario creado exitosamente.",
+        nuevo_comentario_id: nuevoComentarioId,
       });
     }
   );

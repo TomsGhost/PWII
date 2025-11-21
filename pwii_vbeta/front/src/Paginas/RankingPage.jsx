@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import Navbar from '../Componentes/Navbar';
 import EmbedDetails from '../Componentes/EmbedDetails';
@@ -25,36 +25,53 @@ function RankingPage() {
     { rank: 7, titulo: 'Untitled', artista: 'Interpol', imagen: mercyImg },
   ]);
 
-  const [comentarios, setComentarios] = useState([
-    { id: 1, autor: 'Jordi', texto: '¡Me encanta esta canción!', profilePic: 'https://placehold.co/50x50/E58D00/1E1B3A?text=J' },
-    { id: 2, autor: 'Alex', texto: 'Un clásico de Interpol.', profilePic: 'https://placehold.co/50x50/E58D00/1E1B3A?text=A' },
-  ]);
+  const [comentarios, setComentarios] = useState([]); // Initialize as empty array
   const [nuevoComentario, setNuevoComentario] = useState('');
   const [errors, setErrors] = useState({});
 
   const [isFavorite, setIsFavorite] = useState(false); 
   const [isLiked, setIsLiked] = useState(false);
 
+  // Function to fetch comments
+  const fetchComments = useCallback(async () => {
+    try {
+      const response = await fetch(`http://localhost:3001/getCommentsByPostId/${id}`);
+      if (!response.ok) {
+        throw new Error('Error al obtener los comentarios');
+      }
+      const data = await response.json();
+      setComentarios(data);
+    } catch (error) {
+      console.error("Error fetching comments:", error);
+      Swal.fire({
+        title: "Error",
+        text: "No se pudieron cargar los comentarios.",
+        icon: "error",
+      });
+    }
+  }, [id]);
+
   useEffect(() => {
-    const fetchPost = async () => {
+    const fetchPostAndComments = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`http://localhost:3001/getPostById/${id}`);
-        if (!response.ok) {
+        const postResponse = await fetch(`http://localhost:3001/getPostById/${id}`);
+        if (!postResponse.ok) {
           throw new Error('Error al obtener los datos de la publicación');
         }
-        const data = await response.json();
-        // El resultado del SP viene en un array, tomamos el primer elemento del primer array
-        if (data && data[0] && data[0][0]) {
-          setPost(data[0][0]);
+        const postData = await postResponse.json();
+        if (postData && postData[0] && postData[0][0]) {
+          setPost(postData[0][0]);
         } else {
-          setPost(null); // No se encontró la publicación
+          setPost(null);
         }
+        
+        await fetchComments(); // Fetch comments after post is loaded
       } catch (error) {
         console.error(error);
         Swal.fire({
           title: "Error",
-          text: "No se pudo cargar la publicación.",
+          text: "No se pudo cargar la publicación o los comentarios.",
           icon: "error",
         });
       } finally {
@@ -62,12 +79,23 @@ function RankingPage() {
       }
     };
 
-    fetchPost();
-  }, [id]); // El efecto se ejecuta cada vez que el ID de la URL cambia
+    fetchPostAndComments();
+  }, [id, fetchComments]);
 
-  const handleCommentSubmit = (e) => {
+  const handleCommentSubmit = async (e) => {
     e.preventDefault();
     let newErrors = {};
+
+    const userId = localStorage.getItem('userId'); // Assuming userId is stored in localStorage
+
+    if (!userId) {
+      Swal.fire({
+        title: "Error",
+        text: "Debe iniciar sesión para comentar.",
+        icon: "error",
+      });
+      return;
+    }
 
     if (!nuevoComentario.trim()) {
       newErrors.comentario = "El comentario no puede estar vacío.";
@@ -85,15 +113,53 @@ function RankingPage() {
       });
       return;
     }
+
+    console.log("Datos del comentario a enviar:", {
+      id_usuario: userId,
+      id_publicacion: id,
+      texto_comentario: nuevoComentario,
+    });
     
-    const newCommentObject = {
-      id: Date.now(),
-      autor: 'Usuario',
-      texto: nuevoComentario,
-      profilePic: 'https://placehold.co/50x50/E58D00/1E1B3A?text=U',
-    };
-    setComentarios([...comentarios, newCommentObject]);
-    setNuevoComentario('');
+    try {
+      const response = await fetch("http://localhost:3001/createComment", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id_usuario: userId,
+          id_publicacion: id,
+          texto_comentario: nuevoComentario,
+        }),
+      });
+
+      console.log("Respuesta del servidor (status):", response.status);
+      const data = await response.json();
+      console.log("Respuesta del servidor (data):", data);
+
+      if (response.ok) {
+        Swal.fire({
+          title: "Éxito",
+          text: data.msg,
+          icon: "success",
+        });
+        setNuevoComentario('');
+        fetchComments(); // Refresh comments after successful submission
+      } else {
+        Swal.fire({
+          title: "Error",
+          text: data.msg || "Error al publicar el comentario.",
+          icon: "error",
+        });
+      }
+    } catch (error) {
+      console.error("Error al enviar el comentario:", error);
+      Swal.fire({
+        title: "Error",
+        text: "Error de red o del servidor al publicar el comentario.",
+        icon: "error",
+      });
+    }
   };
 
   return (
@@ -109,8 +175,8 @@ function RankingPage() {
         <div className="box column-left">
           <h3>Mas Populares</h3>
           {canciones.map((cancion) => (
-            <Link to={`/Ranking`}>
-                <div className="list" key={cancion.rank}>
+            <Link to={`/Ranking`} key={cancion.rank}>
+                <div className="list">
                   <div className="imgBx">
                   <img src={cancion.imagen} alt={`Portada de ${cancion.titulo}`} />
                 </div>
@@ -131,11 +197,11 @@ function RankingPage() {
           ) : post ? (
             <EmbedDetails 
               songTitle={post.titulo} 
-              authorName={post.nombre_autor}
-              authorId={post.id_autor}
+              authorName={post.nombre_usuario}
+              authorId={post.id_usuario}
               authorInfo={post.descripcion}
               likes={post.total_me_gusta}
-              commentsCount={post.total_comentarios}
+              commentsCount={comentarios.length}
               embedCode={post.texto}
               isFavorite={isFavorite}
               onToggleFavorite={() => setIsFavorite(prev => !prev)}
@@ -150,14 +216,16 @@ function RankingPage() {
             <h3>Comentarios</h3>
             <div className="comment-section">
               {comentarios.map((comentario) => (
-                <Link  to={`/perfil`}>
-                  <div className="list comment-item" key={comentario.id}>
+                <Link  to={`/perfil/${comentario.id_usuario}`} key={comentario.id}> // Link to user profile
+                  <div className="list comment-item">
                     <div className="imgBx comment-img">
-                      <img src={comentario.profilePic} alt={`Foto de ${comentario.autor}`} />
+                      {/* Placeholder for profile pic, as it's not returned by SP_ObtenerComentariosPorPublicacion */}
+                      <img src={`https://ui-avatars.com/api/?name=${comentario.nombre_usuario}&background=random&color=fff`} alt={`Foto de ${comentario.nombre_usuario}`} />
                     </div>
                     <div className="content">
-                      <h4 className="comment-author">{comentario.autor}</h4>
-                      <p>{comentario.texto}</p>
+                      <h4 className="comment-author">{comentario.nombre_usuario}</h4>
+                      <p>{comentario.comentario}</p>
+                      <small>{new Date(comentario.fecha_creacion).toLocaleString()}</small>
                     </div>
                   </div>
                 </Link>
