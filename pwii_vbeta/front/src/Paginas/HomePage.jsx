@@ -58,14 +58,27 @@ function HomePage() {
     fetchUserData();
   }, [datos]);
 
-  const [embeds, setEmbeds] = useState(
-    Array.from({ length: 12 }).map((_, i) => ({
-      id: i + 1,
-      title: "Pokémon",
-      likes: 20,
-      comments: 20,
-    }))
-  );
+  const [embeds, setEmbeds] = useState([]);
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        const response = await axios.get("http://localhost:3001/getPosts");
+        if (response.data) {
+          setEmbeds(response.data);
+        }
+      } catch (error) {
+        console.error("Error fetching posts:", error);
+        Swal.fire({
+          title: "Error",
+          text: "No se pudieron cargar las publicaciones.",
+          icon: "error",
+        });
+      }
+    };
+
+    fetchPosts();
+  }, []);
 
   // Modal de eliminación
   const [toDeleteId, setToDeleteId] = useState(null);
@@ -136,17 +149,17 @@ function HomePage() {
             <div className="recientes-grid">
               {embeds.map((it) => (
                 <Link
-                  //key={it.id}
-                  to={`/Ranking/`} //${it.id}
+                  key={it.idPublicacion}
+                  to={`/Ranking/${it.idPublicacion}`}
                   className="pf-card-link"
                 >
                   <article className="pf-card">
-                    <header className="pf-card-title">{it.title}</header>
+                    <header className="pf-card-title">{it.titulo}</header>
                     <div className="pf-metrics">
                       <span>
                         <img src={star2} alt="Estrella vacía" /> {it.likes}
                       </span>
-                      <span>💬 {it.comments}</span>
+                      <span>💬 {it.comentarios}</span>
                     </div>
                   </article>
                 </Link>

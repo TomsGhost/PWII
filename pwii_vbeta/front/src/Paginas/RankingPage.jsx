@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import Navbar from '../Componentes/Navbar';
 import EmbedDetails from '../Componentes/EmbedDetails';
 import './styleRanking.css';
@@ -9,6 +10,9 @@ import { Link } from 'react-router-dom';
 import Swal from "sweetalert2";
 
 function RankingPage() {
+  const { id } = useParams(); // Obtener el ID de la URL
+  const [post, setPost] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   //Mocks de Prueba
   const [canciones] = useState([
@@ -30,6 +34,36 @@ function RankingPage() {
 
   const [isFavorite, setIsFavorite] = useState(false); 
   const [isLiked, setIsLiked] = useState(false);
+
+  useEffect(() => {
+    const fetchPost = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`http://localhost:3001/getPostById/${id}`);
+        if (!response.ok) {
+          throw new Error('Error al obtener los datos de la publicación');
+        }
+        const data = await response.json();
+        // El resultado del SP viene en un array, tomamos el primer elemento del primer array
+        if (data && data[0] && data[0][0]) {
+          setPost(data[0][0]);
+        } else {
+          setPost(null); // No se encontró la publicación
+        }
+      } catch (error) {
+        console.error(error);
+        Swal.fire({
+          title: "Error",
+          text: "No se pudo cargar la publicación.",
+          icon: "error",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPost();
+  }, [id]); // El efecto se ejecuta cada vez que el ID de la URL cambia
 
   const handleCommentSubmit = (e) => {
     e.preventDefault();
@@ -92,14 +126,24 @@ function RankingPage() {
         </div>
 
         <div className="column-right">
-           <EmbedDetails 
-            songTitle="Pretty Nightmare" 
-            authorInfo="Lorem ipsum, dolor sit amet consectetur adipisicing elit." 
-            isFavorite={isFavorite}
-            onToggleFavorite={() => setIsFavorite(prev => !prev)}
-            isLiked={isLiked}
-            onToggleLike={() => setIsLiked(prev => !prev)}
-          />
+          {loading ? (
+            <p>Cargando publicación...</p>
+          ) : post ? (
+            <EmbedDetails 
+              songTitle={post.titulo} 
+              authorInfo={post.descripcion}
+              authorName={post.nombre_autor}
+              likes={post.total_me_gusta}
+              commentsCount={post.total_comentarios}
+              embedCode={post.texto}
+              isFavorite={isFavorite}
+              onToggleFavorite={() => setIsFavorite(prev => !prev)}
+              isLiked={isLiked}
+              onToggleLike={() => setIsLiked(prev => !prev)}
+            />
+          ) : (
+            <p>La publicación no fue encontrada.</p>
+          )}
 
           <div className="box2 box-comments">
             <h3>Comentarios</h3>

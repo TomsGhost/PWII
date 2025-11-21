@@ -25,7 +25,7 @@ function App() {
         <Route path="/inicio" element={<Inicio />} />
         <Route path="/HomePage" element={<HomePage />} /> 
         <Route path="/SearchPage" element={<SearchPage />} /> //
-        <Route path="/ranking" element={<RankingPage />} /> //
+        <Route path="/Ranking/:id" element={<RankingPage />} /> //
         
         <Route path="/perfil" element={<Perfil />} />  
         <Route path="/profileEdit" element={<EditProfile />} /> //

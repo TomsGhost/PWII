@@ -124,12 +124,31 @@ app.post("/createEmbed", (req, resp) =>{
 });
 
 app.get("/getPosts", (req, resp) => {
-  db.query("CALL V_ObtenerPublicaciones()", (err, result) => {
+  db.query("SELECT * FROM V_ObtenerPublicaciones", (err, result) => {
     if (err) {
       console.error("Error en la consulta a la BD:", err);
       return resp
         .status(500)
         .json({ msg: "Error interno del servidor al obtener las publicaciones." });
+    }
+    const posts = result.map((post) => ({
+      ...post,
+      title: post.titulo,
+      likes: post.total_me_gusta,
+      comments: post.total_comentarios,
+    }));
+    resp.json(posts);
+  });
+});
+
+app.get("/getPostById/:id", (req, resp) => {
+  const { id } = req.params;
+  db.query("CALL ObtenerPublicacionPorId(?)", [id], (err, result) => {
+    if (err) {
+      console.error("Error en la consulta a la BD:", err);
+      return resp
+        .status(500)
+        .json({ msg: "Error interno del servidor al obtener la publicacion." });
     }
     resp.json(result);
   });
