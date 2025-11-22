@@ -17,8 +17,8 @@ function SearchPage() {
   const handleSearch = async (e) => {
     e.preventDefault();
 
-    // --- TUS VALIDACIONES (Excelentes, las mantenemos) ---
-    const busquedaRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ0-9\s]+$/; // Agregué 0-9 por si buscan "Top 10"
+
+    const busquedaRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ0-9\s]+$/; 
 
     if (!searchTerm.trim()) {
       Swal.fire({
@@ -47,7 +47,6 @@ function SearchPage() {
       return;
     }
 
-    // --- LÓGICA DE BÚSQUEDA (CONEXIÓN AL BACKEND) ---
     try {
       setLoading(true); 
       setHasSearched(true);
