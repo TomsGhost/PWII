@@ -17,8 +17,8 @@ function SearchPage() {
   const handleSearch = async (e) => {
     e.preventDefault();
 
-    // --- TUS VALIDACIONES (Excelentes, las mantenemos) ---
-    const busquedaRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ0-9\s]+$/; // Agregué 0-9 por si buscan "Top 10"
+
+    const busquedaRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ0-9\s]+$/; 
 
     if (!searchTerm.trim()) {
       Swal.fire({
@@ -47,18 +47,16 @@ function SearchPage() {
       return;
     }
 
-    // --- LÓGICA DE BÚSQUEDA (CONEXIÓN AL BACKEND) ---
     try {
-      setLoading(true); // Activamos loading
-      setHasSearched(true); // Marcamos que ya se intentó buscar
+      setLoading(true); 
+      setHasSearched(true);
 
-      // Llamada al endpoint que creamos
       const response = await axios.get(
         `http://localhost:3001/search?q=${searchTerm}`
       );
 
       if (response.data) {
-        setEmbeds(response.data); // Guardamos los datos reales de la BD
+        setEmbeds(response.data); 
       }
     } catch (error) {
       console.error("Error en la búsqueda:", error);
@@ -68,7 +66,7 @@ function SearchPage() {
         icon: "error",
       });
     } finally {
-      setLoading(false); // Desactivamos loading sea éxito o error
+      setLoading(false); 
     }
   };
 
@@ -79,9 +77,7 @@ function SearchPage() {
       <div className="color"></div>
       <Navbar />
       <main className="content-wrapper search-content-wrapper">
-        {/* BARRA DE BÚSQUEDA */}
         <form className="search-bar-container" onSubmit={handleSearch}>
-          {/* Si tienes foto de usuario en localStorage puedes ponerla aquí, si no, dejamos la M */}
           <div className="search-bar-icon user-icon">M</div>
 
           <input
@@ -95,7 +91,7 @@ function SearchPage() {
           <button
             type="submit"
             className="search-bar-icon search-icon button-fresh"
-            disabled={loading} // Deshabilita si está cargando
+            disabled={loading}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -114,9 +110,7 @@ function SearchPage() {
           </button>
         </form>
 
-        {/* RESULTADOS */}
         <div className="box2 search-results-panel">
-          {/* Título dinámico */}
           <h3>
             {hasSearched
               ? `Resultados para: "${searchTerm}"`
@@ -134,13 +128,12 @@ function SearchPage() {
                   {embeds.map((it) => (
                     <Link
                       key={it.id}
-                      to={`/Ranking/${it.id}`} // Enlace al detalle real
+                      to={`/Ranking/${it.id}`} 
                       className="pf-card-link"
                     >
                       <article className="pf-card">
                         <header className="pf-card-title">
                           {it.titulo}
-                          {/* Agregué el autor aquí abajo pequeño */}
                           <span
                             style={{
                               display: "block",
@@ -154,7 +147,6 @@ function SearchPage() {
                           </span>
                         </header>
                         <div className="pf-metrics">
-                          {/* Usamos las propiedades que vienen del SP de MySQL */}
                           <span>
                             <img src={star2} alt="Likes" /> {it.total_likes}
                           </span>
@@ -165,7 +157,6 @@ function SearchPage() {
                   ))}
                 </div>
               ) : (
-                // Mensaje si buscó pero no encontró nada
                 hasSearched && (
                   <p
                     style={{

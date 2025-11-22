@@ -10,8 +10,8 @@ export default function FavoriteEmbed() {
   const navigate = useNavigate();
   const location = useLocation();
 
-
-
+  const postId = location.state?.postId;     
+  const userId = localStorage.getItem("id"); 
 
   useEffect(() => {
 
@@ -24,7 +24,7 @@ export default function FavoriteEmbed() {
         icon: "warning",
         confirmButtonText: "Volver"
       }).then(() => {
-
+        navigate(-1); 
       });
     }
   }, [postId, userId, navigate]);
@@ -52,7 +52,7 @@ export default function FavoriteEmbed() {
 
       if (response.ok) {
         await Swal.fire("¡Guardado!", "Añadido a favoritos.", "success");
-
+        navigate(-1); // O navigate(-1)
       } else {
         Swal.fire("Error", data.msg || "No se pudo guardar.", "error");
       }

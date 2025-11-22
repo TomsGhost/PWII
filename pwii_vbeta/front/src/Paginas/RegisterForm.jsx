@@ -81,7 +81,6 @@ const RegisterForm = () => {
   };
 
   const handleSubmit = async (e) => {
-    //validaciones frontend
     e.preventDefault();
 
     if (!validateForm()) {
